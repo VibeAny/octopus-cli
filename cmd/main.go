@@ -61,7 +61,7 @@ func newVersionCommand(version string) *cobra.Command {
 		Use:   "version",
 		Short: "Show version information",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("Octopus CLI version %s\n", version)
+			cmd.Printf("Octopus CLI version %s\n", version)
 		},
 	}
 }
