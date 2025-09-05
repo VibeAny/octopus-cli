@@ -1,0 +1,28 @@
+[server]
+port = 8080
+log_level = "info"
+daemon = true
+pid_file = "/tmp/octopus.pid"
+
+[[apis]]
+id = "official"
+name = "Anthropic Official API"
+url = "https://api.anthropic.com"
+api_key = "sk-ant-your-api-key-here"
+is_active = true
+timeout = 30
+retry_count = 3
+
+[[apis]]
+id = "proxy1"
+name = "Proxy Service 1"
+url = "https://api.proxy1.com"
+api_key = "pk-your-proxy-key-here"
+is_active = false
+timeout = 30
+retry_count = 3
+
+[settings]
+active_api = "official"
+log_file = "/tmp/octopus.log"
+config_backup = true
