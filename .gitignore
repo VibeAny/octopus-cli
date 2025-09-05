@@ -47,6 +47,8 @@ Thumbs.db
 *.toml.secret
 config/*.toml.local
 configs/*.toml.local
+test-config.toml
+*test*.toml
 
 # PID files
 *.pid

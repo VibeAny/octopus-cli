@@ -83,7 +83,7 @@ func TestVersionCommand_Execute_ShouldOutputCorrectVersion(t *testing.T) {
 
 func TestStartCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newStartCommand()
+	cmd := newStartCommand(nil)
 
 	// Assert
 	assert.Equal(t, "start", cmd.Use)
@@ -94,7 +94,7 @@ func TestStartCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 
 func TestStopCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newStopCommand()
+	cmd := newStopCommand(nil)
 
 	// Assert
 	assert.Equal(t, "stop", cmd.Use)
@@ -105,7 +105,7 @@ func TestStopCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 
 func TestStatusCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newStatusCommand()
+	cmd := newStatusCommand(nil)
 
 	// Assert
 	assert.Equal(t, "status", cmd.Use)
@@ -116,7 +116,7 @@ func TestStatusCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 
 func TestHealthCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newHealthCommand()
+	cmd := newHealthCommand(nil)
 
 	// Assert
 	assert.Equal(t, "health", cmd.Use)
@@ -127,7 +127,7 @@ func TestHealthCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 
 func TestLogsCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newLogsCommand()
+	cmd := newLogsCommand(nil)
 
 	// Assert
 	assert.Equal(t, "logs", cmd.Use)
@@ -138,7 +138,7 @@ func TestLogsCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 
 func TestConfigCommand_Subcommands_ShouldHaveAllExpectedSubcommands(t *testing.T) {
 	// Arrange
-	cmd := newConfigCommand()
+	cmd := newConfigCommand(nil)
 	expectedSubcommands := []string{"list", "add", "remove", "switch", "show"}
 
 	// Act
@@ -156,7 +156,7 @@ func TestConfigCommand_Subcommands_ShouldHaveAllExpectedSubcommands(t *testing.T
 
 func TestConfigListCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigListCommand()
+	cmd := newConfigListCommand(nil)
 
 	// Assert
 	assert.Equal(t, "list", cmd.Use)
@@ -167,7 +167,7 @@ func TestConfigListCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.
 
 func TestConfigAddCommand_Properties_ShouldRequireThreeArguments(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigAddCommand()
+	cmd := newConfigAddCommand(nil)
 
 	// Assert
 	assert.Equal(t, "add <name> <url> <api-key>", cmd.Use)
@@ -179,7 +179,7 @@ func TestConfigAddCommand_Properties_ShouldRequireThreeArguments(t *testing.T) {
 
 func TestConfigRemoveCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigRemoveCommand()
+	cmd := newConfigRemoveCommand(nil)
 
 	// Assert
 	assert.Equal(t, "remove <name>", cmd.Use)
@@ -192,7 +192,7 @@ func TestConfigRemoveCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 
 func TestConfigSwitchCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigSwitchCommand()
+	cmd := newConfigSwitchCommand(nil)
 
 	// Assert
 	assert.Equal(t, "switch <name>", cmd.Use)
@@ -204,7 +204,7 @@ func TestConfigSwitchCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 
 func TestConfigShowCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigShowCommand()
+	cmd := newConfigShowCommand(nil)
 
 	// Assert
 	assert.Equal(t, "show <name>", cmd.Use)

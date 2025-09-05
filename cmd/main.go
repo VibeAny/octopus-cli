@@ -41,17 +41,17 @@ restarting Claude Code or modifying environment variables.`,
 	}
 
 	// Global flags
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file path (default: ~/.config/octopus/octopus.toml)")
+	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "f", "", "config file path (default: ~/.config/octopus/octopus.toml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
-	// Add subcommands
+	// Add subcommands - pass config file reference
 	rootCmd.AddCommand(newVersionCommand(version))
-	rootCmd.AddCommand(newStartCommand())
-	rootCmd.AddCommand(newStopCommand())
-	rootCmd.AddCommand(newStatusCommand())
-	rootCmd.AddCommand(newConfigCommand())
-	rootCmd.AddCommand(newHealthCommand())
-	rootCmd.AddCommand(newLogsCommand())
+	rootCmd.AddCommand(newStartCommand(&configFile))
+	rootCmd.AddCommand(newStopCommand(&configFile))
+	rootCmd.AddCommand(newStatusCommand(&configFile))
+	rootCmd.AddCommand(newConfigCommand(&configFile))
+	rootCmd.AddCommand(newHealthCommand(&configFile))
+	rootCmd.AddCommand(newLogsCommand(&configFile))
 
 	return rootCmd
 }
@@ -66,83 +66,98 @@ func newVersionCommand(version string) *cobra.Command {
 	}
 }
 
-func newStartCommand() *cobra.Command {
+func newStartCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "start",
 		Short: "Start the proxy service",
 		Long:  "Start the Octopus proxy service in the background",
 		Run: func(cmd *cobra.Command, args []string) {
+			if *configFile != "" {
+				fmt.Printf("Using config file: %s\n", *configFile)
+			}
 			fmt.Println("Starting Octopus proxy service...")
 			// TODO: Implement start functionality
 		},
 	}
 }
 
-func newStopCommand() *cobra.Command {
+func newStopCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "stop",
 		Short: "Stop the proxy service",
 		Long:  "Stop the running Octopus proxy service",
 		Run: func(cmd *cobra.Command, args []string) {
+			if *configFile != "" {
+				fmt.Printf("Using config file: %s\n", *configFile)
+			}
 			fmt.Println("Stopping Octopus proxy service...")
 			// TODO: Implement stop functionality
 		},
 	}
 }
 
-func newStatusCommand() *cobra.Command {
+func newStatusCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "status",
 		Short: "Show service status",
 		Long:  "Display the current status of the Octopus proxy service",
 		Run: func(cmd *cobra.Command, args []string) {
+			if *configFile != "" {
+				fmt.Printf("Using config file: %s\n", *configFile)
+			}
 			fmt.Println("Checking Octopus service status...")
 			// TODO: Implement status functionality
 		},
 	}
 }
 
-func newHealthCommand() *cobra.Command {
+func newHealthCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "health",
 		Short: "Check API endpoints health",
 		Long:  "Check the health status of all configured API endpoints",
 		Run: func(cmd *cobra.Command, args []string) {
+			if *configFile != "" {
+				fmt.Printf("Using config file: %s\n", *configFile)
+			}
 			fmt.Println("Checking API endpoints health...")
 			// TODO: Implement health functionality
 		},
 	}
 }
 
-func newLogsCommand() *cobra.Command {
+func newLogsCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "logs",
 		Short: "View service logs",
 		Long:  "Display the Octopus service logs",
 		Run: func(cmd *cobra.Command, args []string) {
+			if *configFile != "" {
+				fmt.Printf("Using config file: %s\n", *configFile)
+			}
 			fmt.Println("Showing service logs...")
 			// TODO: Implement logs functionality
 		},
 	}
 }
 
-func newConfigCommand() *cobra.Command {
+func newConfigCommand(configFile *string) *cobra.Command {
 	configCmd := &cobra.Command{
 		Use:   "config",
 		Short: "Manage API configurations",
 		Long:  "Add, remove, list, and switch between API configurations",
 	}
 
-	configCmd.AddCommand(newConfigListCommand())
-	configCmd.AddCommand(newConfigAddCommand())
-	configCmd.AddCommand(newConfigRemoveCommand())
-	configCmd.AddCommand(newConfigSwitchCommand())
-	configCmd.AddCommand(newConfigShowCommand())
+	configCmd.AddCommand(newConfigListCommand(configFile))
+	configCmd.AddCommand(newConfigAddCommand(configFile))
+	configCmd.AddCommand(newConfigRemoveCommand(configFile))
+	configCmd.AddCommand(newConfigSwitchCommand(configFile))
+	configCmd.AddCommand(newConfigShowCommand(configFile))
 
 	return configCmd
 }
 
-func newConfigListCommand() *cobra.Command {
+func newConfigListCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
 		Short:   "List all API configurations",
@@ -154,7 +169,7 @@ func newConfigListCommand() *cobra.Command {
 	}
 }
 
-func newConfigAddCommand() *cobra.Command {
+func newConfigAddCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "add <name> <url> <api-key>",
 		Short: "Add a new API configuration",
@@ -172,7 +187,7 @@ func newConfigAddCommand() *cobra.Command {
 	}
 }
 
-func newConfigRemoveCommand() *cobra.Command {
+func newConfigRemoveCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "remove <name>",
 		Short:   "Remove an API configuration",
@@ -187,7 +202,7 @@ func newConfigRemoveCommand() *cobra.Command {
 	}
 }
 
-func newConfigSwitchCommand() *cobra.Command {
+func newConfigSwitchCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "switch <name>",
 		Short: "Switch to a specific API configuration",
@@ -202,7 +217,7 @@ func newConfigSwitchCommand() *cobra.Command {
 	}
 }
 
-func newConfigShowCommand() *cobra.Command {
+func newConfigShowCommand(configFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:     "show <name>",
 		Short:   "Show details of an API configuration",
