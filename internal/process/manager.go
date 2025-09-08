@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -25,6 +26,14 @@ type Manager struct {
 
 // NewManager creates a new process manager
 func NewManager(pidFile, name string) *Manager {
+	// Convert relative paths to absolute paths based on executable directory
+	if !filepath.IsAbs(pidFile) {
+		if execPath, err := os.Executable(); err == nil {
+			execDir := filepath.Dir(execPath)
+			pidFile = filepath.Join(execDir, pidFile)
+		}
+	}
+	
 	return &Manager{
 		pidFile: pidFile,
 		name:    name,
@@ -45,6 +54,11 @@ func (m *Manager) StartDaemon() error {
 	}
 
 	return nil
+}
+
+// WritePIDFile writes the PID to file (public method)
+func (m *Manager) WritePIDFile(pid int) error {
+	return m.writePIDFile(pid)
 }
 
 // StopDaemon stops the running daemon process

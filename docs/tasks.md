@@ -68,56 +68,70 @@
   - [x] 编写活跃配置管理测试
   - [x] 活跃配置管理
 
-### Phase 5: CLI 命令实现 (TDD 方式)
-- [ ] 服务管理命令 (测试先行)
-  - [ ] 编写 `octopus start` 测试 - 启动服务
-  - [ ] `octopus start` - 启动服务
-  - [ ] 编写 `octopus stop` 测试 - 停止服务
-  - [ ] `octopus stop` - 停止服务  
-  - [ ] 编写 `octopus status` 测试 - 状态查询
-  - [ ] `octopus status` - 状态查询
-  - [ ] 编写 `octopus restart` 测试 - 重启服务
-  - [ ] `octopus restart` - 重启服务
-- [ ] 配置管理命令 (测试先行)
-  - [ ] 编写 `octopus config list` 测试 - 列出配置
-  - [ ] `octopus config list` - 列出配置
-  - [ ] 编写 `octopus config add` 测试 - 添加配置
-  - [ ] `octopus config add` - 添加配置
-  - [ ] 编写 `octopus config remove` 测试 - 删除配置
-  - [ ] `octopus config remove` - 删除配置
-  - [ ] 编写 `octopus config switch` 测试 - 切换配置
-  - [ ] `octopus config switch` - 切换配置
-  - [ ] 编写 `octopus config show` 测试 - 显示配置详情
-  - [ ] `octopus config show` - 显示配置详情
-- [ ] 监控诊断命令 (测试先行)
-  - [ ] 编写 `octopus health` 测试 - 健康检查
-  - [ ] `octopus health` - 健康检查
-  - [ ] 编写 `octopus logs` 测试 - 日志查看
-  - [ ] `octopus logs` - 日志查看
-  - [ ] 编写 `octopus version` 测试 - 版本信息
-  - [ ] `octopus version` - 版本信息
+### Phase 5: CLI 命令实现 (TDD 方式) (已完成)
+- [x] 服务管理命令 (测试先行)
+  - [x] 编写 `octopus start` 测试 - 启动服务
+  - [x] `octopus start` - 启动服务
+  - [x] 编写 `octopus stop` 测试 - 停止服务
+  - [x] `octopus stop` - 停止服务  
+  - [x] 编写 `octopus status` 测试 - 状态查询
+  - [x] `octopus status` - 状态查询
+  - [ ] 编写 `octopus restart` 测试 - 重启服务 (不在 MVP 范围)
+  - [ ] `octopus restart` - 重启服务 (不在 MVP 范围)
+- [x] 配置管理命令 (测试先行)
+  - [x] 编写 `octopus config list` 测试 - 列出配置
+  - [x] `octopus config list` - 列出配置
+  - [x] 编写 `octopus config add` 测试 - 添加配置
+  - [x] `octopus config add` - 添加配置
+  - [x] 编写 `octopus config remove` 测试 - 删除配置
+  - [x] `octopus config remove` - 删除配置
+  - [x] 编写 `octopus config switch` 测试 - 切换配置
+  - [x] `octopus config switch` - 切换配置
+  - [x] 编写 `octopus config show` 测试 - 显示配置详情
+  - [x] `octopus config show` - 显示配置详情
+- [x] 监控诊断命令 (测试先行)
+  - [x] 编写 `octopus health` 测试 - 健康检查
+  - [x] `octopus health` - 健康检查
+  - [x] 编写 `octopus logs` 测试 - 日志查看
+  - [x] `octopus logs` - 日志查看
+  - [x] 编写 `octopus version` 测试 - 版本信息
+  - [x] `octopus version` - 版本信息
 
-### Phase 6: 用户体验优化
-- [ ] CLI 用户界面优化
+### Phase 6: 用户体验优化 (已完成核心功能)
+- [x] CLI 用户界面优化
+  - [x] 便捷启动模式 (`octopus` 无参数直接启动)
+  - [x] 智能配置文件管理 (自动使用 default.toml 或记住上次使用的配置)
+  - [x] 状态查看功能 (`octopus config` 显示当前配置信息)
   - [ ] 交互式配置添加
-  - [ ] 彩色输出和格式化
+  - [x] 彩色输出和格式化 (已完成表格对齐修复)
   - [ ] 进度指示器
-- [ ] 错误处理优化
-  - [ ] 用户友好的错误信息
+- [x] 错误处理优化
+  - [x] 用户友好的错误信息
+  - [x] 配置文件不存在时自动回退到默认配置
+  - [x] API 切换时自动验证 API 配置存在
   - [ ] 错误恢复建议
   - [ ] 调试模式支持
-- [ ] 配置管理优化
+- [x] 配置管理优化
+  - [x] 可移植配置系统 (所有文件保存在二进制同目录)
+  - [x] 配置状态持久化 (settings.toml 记录当前配置文件)
+  - [x] API 即时切换 (自动重启守护进程应用新配置)
   - [ ] 配置模板生成
   - [ ] 配置验证和提示
   - [ ] 配置备份恢复
+- [x] 构建系统优化
+  - [x] 多平台构建支持 (Windows, macOS-x64, macOS-ARM64, Linux)
+  - [x] 版本化命名规则 (v0.0.1-platform-YYYYMMDD.git_sha)
 
-### Phase 7: 健康检查和监控
-- [ ] API 健康检查功能
-  - [ ] 端点可用性检查
-  - [ ] 响应时间监控
-  - [ ] 状态报告生成
-- [ ] 日志和监控系统
-  - [ ] 结构化日志
+### Phase 7: 健康检查和监控 (已完成基础功能)
+- [x] API 健康检查功能
+  - [x] 端点可用性检查 (`octopus health` 命令)
+  - [x] 响应时间监控
+  - [x] 状态报告生成
+- [x] 日志和监控系统
+  - [x] 结构化日志 (时间戳 + 日志级别 + 消息)
+  - [x] 请求转发日志 (记录源 IP、目标 API、转发结果)
+  - [x] 配置变更日志 (记录 API 切换和守护进程重启)
+  - [x] 可移植日志文件 (logs/octopus.log)
   - [ ] 请求统计
   - [ ] 性能指标收集
 - [ ] 管理 API 接口 (可选)
@@ -152,18 +166,22 @@
 
 ## CLI 命令开发优先级
 
-**High Priority (MVP 必需):**
-1. `octopus start/stop/status` - 基础服务管理
-2. `octopus config add/list/switch` - 核心配置管理
-3. 基础代理转发功能
+**✅ High Priority (MVP 必需) - 已完成:**
+1. ✅ `octopus start/stop/status` - 基础服务管理
+2. ✅ `octopus config add/list/switch` - 核心配置管理
+3. ✅ 基础代理转发功能
+4. ✅ 便捷启动模式 (`octopus` 无参数自动启动)
+5. ✅ 智能配置管理 (自动记住配置文件状态)
 
-**Medium Priority:**
-1. `octopus config remove/show` - 完整配置管理
-2. `octopus health` - 健康检查
-3. `octopus logs` - 日志查看
-4. 配置验证和错误处理
+**✅ Medium Priority - 已完成:**
+1. ✅ `octopus config remove/show` - 完整配置管理
+2. ✅ `octopus health` - 健康检查
+3. ✅ `octopus logs` - 日志查看
+4. ✅ 配置验证和错误处理
+5. ✅ API 即时切换 (自动重启守护进程)
+6. ✅ 可移植配置系统
 
-**Low Priority:**
+**⏳ Low Priority - 待开发:**
 1. `octopus restart` - 便利功能
 2. `octopus config edit` - 高级配置
 3. 管理 API 接口
@@ -240,25 +258,36 @@
 
 ## 里程碑
 
-1. **CLI 框架版本** - 基础 CLI 命令和配置管理 (Phase 2-3)
-2. **MVP 版本** - 基本代理和配置切换功能 (Phase 4-5)
-3. **Beta 版本** - 完整 CLI 功能和用户体验优化 (Phase 6-7)
-4. **正式版本** - 完善测试和文档 (Phase 8)
-5. **发布版本** - 可分发安装 (Phase 9)
+1. ✅ **CLI 框架版本** - 基础 CLI 命令和配置管理 (Phase 2-3) [已完成]
+2. ✅ **MVP 版本** - 基本代理和配置切换功能 (Phase 4-5) [已完成]
+3. ✅ **Beta 版本** - 完整 CLI 功能和用户体验优化 (Phase 6-7) [核心功能已完成]
+4. ⏳ **正式版本** - 完善测试和文档 (Phase 8) [测试覆盖待完善]
+5. ⏳ **发布版本** - 可分发安装 (Phase 9) [待开发]
 
 ## 质量门禁
 
-### MVP 版本要求
-- 基础 CLI 命令正常工作
-- TOML 配置文件读写正常
-- 代理转发功能正常
-- 配置切换功能正常
+### ✅ MVP 版本要求 - 已完成
+- ✅ 基础 CLI 命令正常工作
+- ✅ TOML 配置文件读写正常
+- ✅ 代理转发功能正常
+- ✅ 配置切换功能正常
 
-### Beta 版本要求  
-- 所有 CLI 命令实现
-- 错误处理完善
-- 用户体验友好
-- 基本测试覆盖
+### ✅ Beta 版本要求 - 已完成
+- ✅ 所有 CLI 命令实现
+- ✅ 错误处理完善
+- ✅ 用户体验友好 (便捷启动、智能配置管理、可移植部署)
+- ✅ 基本测试覆盖
+
+### 🆕 当前版本特色功能
+- ✅ **便捷启动**: `octopus` 无参数直接启动，无需指定配置文件
+- ✅ **智能配置**: 自动记住当前使用的配置文件，支持无缝切换
+- ✅ **即时生效**: API 切换后自动重启守护进程，立即应用新配置
+- ✅ **完整日志**: 记录所有请求转发、API 切换、服务重启事件
+- ✅ **可移植部署**: 所有配置文件、日志、PID 文件保存在二进制同目录
+- ✅ **健壮错误处理**: 配置文件不存在时自动回退，API 不存在时提示错误
+- ✅ **彩色输出**: 美观的彩色表格和状态显示，支持 `--no-color` 选项，已修复表格对齐问题
+- ✅ **多平台构建**: 支持 Windows, macOS (x64/ARM64), Linux 平台构建
+- ✅ **版本化发布**: 规范的版本命名 `v0.0.1-platform-YYYYMMDD.git_sha`
 
 ### 正式版本要求
 - 完整测试覆盖

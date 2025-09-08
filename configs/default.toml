@@ -2,7 +2,7 @@
 port = 8080
 log_level = "info"
 daemon = true
-pid_file = "/tmp/octopus.pid"
+pid_file = "octopus.pid"
 
 [[apis]]
 id = "official"
@@ -24,5 +24,5 @@ retry_count = 3
 
 [settings]
 active_api = "official"
-log_file = "/tmp/octopus.log"
+log_file = "logs/octopus.log"
 config_backup = true

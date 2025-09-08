@@ -40,12 +40,12 @@ func DefaultConfig() *Config {
 			Port:     8080,
 			LogLevel: "info",
 			Daemon:   true,
-			PIDFile:  "/tmp/octopus.pid",
+			PIDFile:  "octopus.pid",
 		},
 		APIs: []APIConfig{},
 		Settings: Settings{
 			ActiveAPI:    "",
-			LogFile:      "/tmp/octopus.log",
+			LogFile:      "logs/octopus.log",
 			ConfigBackup: true,
 		},
 	}

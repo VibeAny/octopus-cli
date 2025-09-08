@@ -13,7 +13,7 @@ func TestRootCommand_Creation_ShouldHaveCorrectProperties(t *testing.T) {
 	version := "test-version"
 
 	// Act
-	cmd := newRootCommand(version)
+	cmd := newRootCommand(version, nil)
 
 	// Assert
 	assert.Equal(t, "octopus", cmd.Use)
@@ -26,7 +26,7 @@ func TestRootCommand_Creation_ShouldHaveCorrectProperties(t *testing.T) {
 
 func TestRootCommand_Subcommands_ShouldHaveAllExpectedCommands(t *testing.T) {
 	// Arrange
-	cmd := newRootCommand("test")
+	cmd := newRootCommand("test", nil)
 	expectedCommands := []string{
 		"version", "start", "stop", "status", 
 		"config", "health", "logs",
@@ -51,7 +51,7 @@ func TestRootCommand_Subcommands_ShouldHaveAllExpectedCommands(t *testing.T) {
 
 func TestRootCommand_GlobalFlags_ShouldHaveConfigAndVerbose(t *testing.T) {
 	// Arrange
-	cmd := newRootCommand("test")
+	cmd := newRootCommand("test", nil)
 
 	// Act & Assert
 	configFlag := cmd.PersistentFlags().Lookup("config")
@@ -83,62 +83,68 @@ func TestVersionCommand_Execute_ShouldOutputCorrectVersion(t *testing.T) {
 
 func TestStartCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newStartCommand(nil)
+	var configFile string
+	cmd := newStartCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "start", cmd.Use)
 	assert.Contains(t, cmd.Short, "Start")
 	assert.Contains(t, cmd.Long, "proxy service")
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 }
 
 func TestStopCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newStopCommand(nil)
+	var configFile string
+	cmd := newStopCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "stop", cmd.Use)
 	assert.Contains(t, cmd.Short, "Stop")
 	assert.Contains(t, cmd.Long, "proxy service")
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 }
 
 func TestStatusCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newStatusCommand(nil)
+	var configFile string
+	cmd := newStatusCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "status", cmd.Use)
 	assert.Contains(t, cmd.Short, "status")
 	assert.Contains(t, cmd.Long, "status")
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 }
 
 func TestHealthCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newHealthCommand(nil)
+	var configFile string
+	cmd := newHealthCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "health", cmd.Use)
 	assert.Contains(t, cmd.Short, "health")
 	assert.Contains(t, cmd.Long, "health")
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 }
 
 func TestLogsCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newLogsCommand(nil)
+	var configFile string
+	cmd := newLogsCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "logs", cmd.Use)
 	assert.Contains(t, cmd.Short, "logs")
 	assert.Contains(t, cmd.Long, "logs")
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 }
 
 func TestConfigCommand_Subcommands_ShouldHaveAllExpectedSubcommands(t *testing.T) {
 	// Arrange
-	cmd := newConfigCommand(nil)
+	var configFile string
+	cmd := newConfigCommand(&configFile, nil)
 	expectedSubcommands := []string{"list", "add", "remove", "switch", "show"}
 
 	// Act
@@ -156,30 +162,33 @@ func TestConfigCommand_Subcommands_ShouldHaveAllExpectedSubcommands(t *testing.T
 
 func TestConfigListCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigListCommand(nil)
+	var configFile string
+	cmd := newConfigListCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "list", cmd.Use)
 	assert.Contains(t, cmd.Short, "List")
 	assert.Contains(t, cmd.Aliases, "ls")
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 }
 
 func TestConfigAddCommand_Properties_ShouldRequireThreeArguments(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigAddCommand(nil)
+	var configFile string
+	cmd := newConfigAddCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "add <name> <url> <api-key>", cmd.Use)
 	assert.Contains(t, cmd.Short, "Add")
 	assert.NotNil(t, cmd.Args)
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 	assert.NotEmpty(t, cmd.Example)
 }
 
 func TestConfigRemoveCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigRemoveCommand(nil)
+	var configFile string
+	cmd := newConfigRemoveCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "remove <name>", cmd.Use)
@@ -187,36 +196,38 @@ func TestConfigRemoveCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 	assert.Contains(t, cmd.Aliases, "rm")
 	assert.Contains(t, cmd.Aliases, "delete")
 	assert.NotNil(t, cmd.Args)
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 }
 
 func TestConfigSwitchCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigSwitchCommand(nil)
+	var configFile string
+	cmd := newConfigSwitchCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "switch <name>", cmd.Use)
 	assert.Contains(t, cmd.Short, "Switch")
 	assert.NotNil(t, cmd.Args)
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 	assert.NotEmpty(t, cmd.Example)
 }
 
 func TestConfigShowCommand_Properties_ShouldRequireOneArgument(t *testing.T) {
 	// Arrange & Act
-	cmd := newConfigShowCommand(nil)
+	var configFile string
+	cmd := newConfigShowCommand(&configFile, nil)
 
 	// Assert
 	assert.Equal(t, "show <name>", cmd.Use)
 	assert.Contains(t, cmd.Short, "Show")
 	assert.NotNil(t, cmd.Args)
-	assert.NotNil(t, cmd.Run)
+	assert.NotNil(t, cmd.RunE)
 	assert.NotEmpty(t, cmd.Example)
 }
 
 func TestRootCommand_Help_ShouldContainUsageInformation(t *testing.T) {
 	// Arrange
-	cmd := newRootCommand("test")
+	cmd := newRootCommand("test", nil)
 	output := &bytes.Buffer{}
 	cmd.SetOut(output)
 	cmd.SetArgs([]string{"--help"})

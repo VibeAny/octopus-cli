@@ -4,7 +4,9 @@
 
 # Variables
 BINARY_NAME=octopus
-VERSION?=dev
+VERSION?=v0.0.1
+DATE=$(shell date +%Y%m%d)
+GIT_SHA=$(shell git rev-parse --short=8 HEAD)
 LDFLAGS=-ldflags "-X main.version=${VERSION}"
 COVERAGE_FILE=coverage.out
 COVERAGE_HTML=coverage.html
@@ -23,12 +25,20 @@ build: ## Build the binary
 	@echo "Building ${BINARY_NAME}..."
 	go build ${LDFLAGS} -o ${BINARY_NAME} ./cmd
 
-build-all: ## Build for all platforms
+build-all: ## Build for all platforms (Windows, macOS-x64, macOS-ARM64, Linux)
 	@echo "Building for all platforms..."
-	GOOS=linux GOARCH=amd64 go build ${LDFLAGS} -o dist/${BINARY_NAME}-linux-amd64 ./cmd
-	GOOS=darwin GOARCH=amd64 go build ${LDFLAGS} -o dist/${BINARY_NAME}-darwin-amd64 ./cmd
-	GOOS=darwin GOARCH=arm64 go build ${LDFLAGS} -o dist/${BINARY_NAME}-darwin-arm64 ./cmd
-	GOOS=windows GOARCH=amd64 go build ${LDFLAGS} -o dist/${BINARY_NAME}-windows-amd64.exe ./cmd
+	@echo "Version: ${VERSION}, Date: ${DATE}, Git SHA: ${GIT_SHA}"
+	@mkdir -p build/release
+	@echo "Building for Windows (amd64)..."
+	GOOS=windows GOARCH=amd64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-windows-amd64-${DATE}.${GIT_SHA}.exe ./cmd
+	@echo "Building for macOS (x64)..."
+	GOOS=darwin GOARCH=amd64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-macos-x64-${DATE}.${GIT_SHA} ./cmd
+	@echo "Building for macOS (ARM64)..."
+	GOOS=darwin GOARCH=arm64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-macos-arm64-${DATE}.${GIT_SHA} ./cmd
+	@echo "Building for Linux (amd64)..."
+	GOOS=linux GOARCH=amd64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-linux-amd64-${DATE}.${GIT_SHA} ./cmd
+	@echo "All platforms built successfully!"
+	@ls -la build/release/
 
 install: build ## Install the binary to $GOPATH/bin
 	@echo "Installing ${BINARY_NAME}..."
@@ -93,6 +103,7 @@ clean: ## Clean build artifacts
 	rm -f ${BINARY_NAME}
 	rm -f ${COVERAGE_FILE}
 	rm -f ${COVERAGE_HTML}
+	rm -rf build/release/
 	rm -rf dist/
 
 clean-all: clean ## Clean everything including vendor

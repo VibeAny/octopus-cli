@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"octopus-cli/internal/config"
+	"octopus-cli/internal/utils"
 )
 
 // ServerStats represents server statistics
@@ -31,6 +32,7 @@ type Server struct {
 	server       *http.Server
 	listener     net.Listener
 	stats        *ServerStats
+	logger       *utils.Logger
 	mu           sync.RWMutex
 	requestCount int64
 	errorCount   int64
@@ -38,9 +40,18 @@ type Server struct {
 
 // NewServer creates a new proxy server
 func NewServer(cfg *config.Config) *Server {
+	// Initialize logger
+	var logger *utils.Logger
+	if cfg.Settings.LogFile != "" {
+		if l, err := utils.NewLogger(cfg.Settings.LogFile); err == nil {
+			logger = l
+		}
+	}
+
 	return &Server{
 		config: cfg,
 		port:   cfg.Server.Port,
+		logger: logger,
 		stats: &ServerStats{
 			StartTime: time.Now(),
 		},
@@ -65,6 +76,11 @@ func (s *Server) Start() error {
 	s.listener = listener
 	s.actualPort = listener.Addr().(*net.TCPAddr).Port
 
+	// Log server startup
+	if s.logger != nil {
+		s.logger.Info("Starting Octopus proxy server on port %d", s.actualPort)
+	}
+
 	// Create HTTP server
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.handleRequest)
@@ -76,11 +92,18 @@ func (s *Server) Start() error {
 	// Start server in goroutine
 	go func() {
 		if err := s.server.Serve(listener); err != nil && err != http.ErrServerClosed {
-			// Log error but don't fail - server might be shutting down
+			if s.logger != nil {
+				s.logger.Error("Server error: %v", err)
+			}
 		}
 	}()
 
 	s.isRunning = true
+	
+	if s.logger != nil {
+		s.logger.Info("Octopus proxy server started successfully on port %d", s.actualPort)
+	}
+	
 	return nil
 }
 
@@ -93,15 +116,27 @@ func (s *Server) Stop() error {
 		return fmt.Errorf("server is not running")
 	}
 
+	if s.logger != nil {
+		s.logger.Info("Stopping Octopus proxy server...")
+	}
+
 	// Graceful shutdown with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := s.server.Shutdown(ctx); err != nil {
+		if s.logger != nil {
+			s.logger.Error("Failed to shutdown server gracefully: %v", err)
+		}
 		return fmt.Errorf("failed to shutdown server: %w", err)
 	}
 
 	s.isRunning = false
+	
+	if s.logger != nil {
+		s.logger.Info("Octopus proxy server stopped successfully")
+	}
+	
 	return nil
 }
 
@@ -147,20 +182,41 @@ func (s *Server) GetStats() *ServerStats {
 // handleRequest handles incoming HTTP requests and forwards them
 func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
 	atomic.AddInt64(&s.requestCount, 1)
+	
+	// Log incoming request
+	if s.logger != nil {
+		s.logger.Info("Incoming request: %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
+	}
 
 	// Get active API configuration
 	activeAPI, err := s.getActiveAPI()
 	if err != nil {
 		atomic.AddInt64(&s.errorCount, 1)
+		if s.logger != nil {
+			s.logger.Error("No active API configured: %v", err)
+		}
 		http.Error(w, fmt.Sprintf("no active API configured: %v", err), http.StatusBadGateway)
 		return
+	}
+
+	// Log API forwarding
+	if s.logger != nil {
+		s.logger.Info("Forwarding request to API: %s (%s)", activeAPI.ID, activeAPI.URL)
 	}
 
 	// Forward the request
 	if err := s.forwardRequest(w, r, activeAPI); err != nil {
 		atomic.AddInt64(&s.errorCount, 1)
+		if s.logger != nil {
+			s.logger.Error("Failed to forward request to %s: %v", activeAPI.URL, err)
+		}
 		http.Error(w, fmt.Sprintf("failed to forward request: %v", err), http.StatusBadGateway)
 		return
+	}
+	
+	// Log successful forwarding
+	if s.logger != nil {
+		s.logger.Info("Request forwarded successfully to %s", activeAPI.ID)
 	}
 }
 

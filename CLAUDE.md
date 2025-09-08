@@ -13,12 +13,11 @@ Octopus CLI is a command-line tool that provides local API forwarding proxy serv
 
 ```
 octopus-cli/
-├── cmd/octopus/          # CLI application entry point
+├── cmd/                  # CLI application entry point
 ├── internal/             # Private application code
 │   ├── config/          # TOML configuration management
 │   ├── proxy/           # HTTP proxy server and forwarding engine  
-│   ├── api/             # Management REST API
-│   ├── cli/             # CLI commands and interfaces
+│   ├── process/         # Process management and daemon control
 │   └── utils/           # Utilities (logging, validation)
 ├── pkg/                 # Public packages
 ├── configs/             # TOML configuration files
@@ -26,6 +25,11 @@ octopus-cli/
 │   ├── requirements.md  # Requirements specification
 │   ├── tasks.md         # Task management and roadmap
 │   └── architecture.md  # Architecture design
+├── test/                # Testing documentation and reports
+│   ├── functional/      # Functional test specifications
+│   ├── reports/         # Test execution reports
+│   ├── scripts/         # Test execution scripts
+│   └── README.md        # Testing guide
 ├── Makefile             # Build scripts
 └── go.mod              # Go module definition
 ```
@@ -42,13 +46,13 @@ octopus-cli/
 
 Once Go project is initialized:
 - `go mod init octopus-cli` - Initialize Go module
-- `go build ./cmd/octopus` - Build the CLI application  
-- `go test ./...` - Run all tests
+- `go build ./cmd` - Build the CLI application  
+- `go test ./...` - Run all unit tests
+- `./test/scripts/run-functional-tests.sh` - Run functional tests
 - `go fmt ./...` - Format code
 - `make build` - Build using Makefile
 - `make test` - Run tests using Makefile
 - `make test-coverage` - Run tests with coverage report
-- `make tdd` - Run in TDD watch mode
 - `make check` - Run all quality checks (fmt, lint, vet, test)
 
 ## Development Methodology

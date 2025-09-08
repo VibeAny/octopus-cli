@@ -17,11 +17,11 @@ func TestDefaultConfig_Creation_ShouldHaveCorrectDefaults(t *testing.T) {
 	assert.Equal(t, 8080, config.Server.Port)
 	assert.Equal(t, "info", config.Server.LogLevel)
 	assert.True(t, config.Server.Daemon)
-	assert.Equal(t, "/tmp/octopus.pid", config.Server.PIDFile)
+	assert.Equal(t, "octopus.pid", config.Server.PIDFile)
 	
 	assert.Empty(t, config.APIs)
 	assert.Equal(t, "", config.Settings.ActiveAPI)
-	assert.Equal(t, "/tmp/octopus.log", config.Settings.LogFile)
+	assert.Equal(t, "logs/octopus.log", config.Settings.LogFile)
 	assert.True(t, config.Settings.ConfigBackup)
 }
 

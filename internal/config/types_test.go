@@ -122,7 +122,7 @@ func TestDefaultConfig_Values_ShouldMatchExpectedDefaults(t *testing.T) {
 	assert.Equal(t, 8080, config.Server.Port)
 	assert.Equal(t, "info", config.Server.LogLevel)
 	assert.True(t, config.Server.Daemon)
-	assert.Equal(t, "/tmp/octopus.pid", config.Server.PIDFile)
+	assert.Equal(t, "octopus.pid", config.Server.PIDFile)
 	
 	// APIs should be empty initially
 	assert.Empty(t, config.APIs)
@@ -130,7 +130,7 @@ func TestDefaultConfig_Values_ShouldMatchExpectedDefaults(t *testing.T) {
 	
 	// Settings defaults
 	assert.Empty(t, config.Settings.ActiveAPI) // No active API initially
-	assert.Equal(t, "/tmp/octopus.log", config.Settings.LogFile)
+	assert.Equal(t, "logs/octopus.log", config.Settings.LogFile)
 	assert.True(t, config.Settings.ConfigBackup)
 }
 

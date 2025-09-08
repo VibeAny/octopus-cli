@@ -83,3 +83,6 @@ test-config.toml
 
 # Linux
 *~
+
+# Claude
+.claude
