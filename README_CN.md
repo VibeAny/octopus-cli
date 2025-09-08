@@ -265,7 +265,3 @@ graph TB
 - 🐛 [问题跟踪](https://github.com/VibeAny/octopus-cli/issues)
 - 💬 [讨论区](https://github.com/VibeAny/octopus-cli/discussions)
 
-## 致谢
-
-- 感谢 Claude Code 团队创建了如此出色的开发工具
-- 灵感来源于开发工作流中对无缝 API 切换的需求
