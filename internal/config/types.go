@@ -42,7 +42,26 @@ func DefaultConfig() *Config {
 			Daemon:   true,
 			PIDFile:  "octopus.pid",
 		},
-		APIs: []APIConfig{},
+		APIs: []APIConfig{
+			{
+				ID:         "official-example",
+				Name:       "Anthropic Official API (Example)",
+				URL:        "https://api.anthropic.com",
+				APIKey:     "sk-ant-your-api-key-here",
+				IsActive:   false,
+				Timeout:    30,
+				RetryCount: 3,
+			},
+			{
+				ID:         "proxy-example",
+				Name:       "Proxy Service Example",
+				URL:        "https://api.proxy-service.com",
+				APIKey:     "your-proxy-api-key-here",
+				IsActive:   false,
+				Timeout:    30,
+				RetryCount: 3,
+			},
+		},
 		Settings: Settings{
 			ActiveAPI:    "",
 			LogFile:      "logs/octopus.log",

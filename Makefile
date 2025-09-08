@@ -25,18 +25,26 @@ build: ## Build the binary
 	@echo "Building ${BINARY_NAME}..."
 	go build ${LDFLAGS} -o ${BINARY_NAME} ./cmd
 
-build-all: ## Build for all platforms (Windows, macOS-x64, macOS-ARM64, Linux)
+build-all: ## Build for all platforms (Windows, macOS, Linux - all major architectures)
 	@echo "Building for all platforms..."
 	@echo "Version: ${VERSION}, Date: ${DATE}, Git SHA: ${GIT_SHA}"
 	@mkdir -p build/release
 	@echo "Building for Windows (amd64)..."
 	GOOS=windows GOARCH=amd64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-windows-amd64-${DATE}.${GIT_SHA}.exe ./cmd
-	@echo "Building for macOS (x64)..."
-	GOOS=darwin GOARCH=amd64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-macos-x64-${DATE}.${GIT_SHA} ./cmd
+	@echo "Building for Windows (arm64)..."
+	GOOS=windows GOARCH=arm64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-windows-arm64-${DATE}.${GIT_SHA}.exe ./cmd
+	@echo "Building for Windows (386)..."
+	GOOS=windows GOARCH=386 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-windows-386-${DATE}.${GIT_SHA}.exe ./cmd
+	@echo "Building for macOS (amd64)..."
+	GOOS=darwin GOARCH=amd64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-macos-amd64-${DATE}.${GIT_SHA} ./cmd
 	@echo "Building for macOS (ARM64)..."
 	GOOS=darwin GOARCH=arm64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-macos-arm64-${DATE}.${GIT_SHA} ./cmd
 	@echo "Building for Linux (amd64)..."
 	GOOS=linux GOARCH=amd64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-linux-amd64-${DATE}.${GIT_SHA} ./cmd
+	@echo "Building for Linux (arm64)..."
+	GOOS=linux GOARCH=arm64 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-linux-arm64-${DATE}.${GIT_SHA} ./cmd
+	@echo "Building for Linux (386)..."
+	GOOS=linux GOARCH=386 go build ${LDFLAGS} -o build/release/${BINARY_NAME}-${VERSION}-linux-386-${DATE}.${GIT_SHA} ./cmd
 	@echo "All platforms built successfully!"
 	@ls -la build/release/
 

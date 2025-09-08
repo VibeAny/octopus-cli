@@ -18,7 +18,8 @@ octopus-cli/
 │   ├── config/          # TOML configuration management
 │   ├── proxy/           # HTTP proxy server and forwarding engine  
 │   ├── process/         # Process management and daemon control
-│   └── utils/           # Utilities (logging, validation)
+│   ├── state/           # Application state management
+│   └── utils/           # Utilities (logging, validation, formatter)
 ├── pkg/                 # Public packages
 ├── configs/             # TOML configuration files
 ├── docs/                # Project documentation
@@ -51,6 +52,7 @@ Once Go project is initialized:
 - `./test/scripts/run-functional-tests.sh` - Run functional tests
 - `go fmt ./...` - Format code
 - `make build` - Build using Makefile
+- `make build-all` - Build for all platforms (8 platforms supported)
 - `make test` - Run tests using Makefile
 - `make test-coverage` - Run tests with coverage report
 - `make check` - Run all quality checks (fmt, lint, vet, test)
@@ -85,16 +87,24 @@ Once Go project is initialized:
 - `octopus config add` - Add new API configuration
 - `octopus config switch <id>` - Switch to specific API configuration
 - `octopus config remove <id>` - Remove API configuration
+- `octopus config show <id>` - Show configuration details
+- `octopus health` - Check API endpoints health
+- `octopus logs` - View service logs
+- `octopus version` - Show version information
+- `octopus update` - Check and update to latest version (Phase 8)
 
 ## Development Workflow
 
 Follow the task phases defined in `docs/tasks.md`:
-1. Phase 2: Go project initialization
-2. Phase 3: Core architecture implementation
-3. Phase 4: Management functionality development
-4. Phase 5: User experience optimization
-5. Phase 6: Testing and documentation
-6. Phase 7: Release preparation
+1. ✅ Phase 2: Go project initialization
+2. ✅ Phase 3: Core architecture implementation
+3. ✅ Phase 4: Management functionality development
+4. ✅ Phase 5: CLI command implementation
+5. ✅ Phase 6: User experience optimization (colorized output, multi-platform builds)
+6. ✅ Phase 7: Health checking and monitoring (basic functionality)
+7. ⏳ Phase 8: Auto-update and CI/CD system (new requirement)
+8. ⏳ Phase 9: Testing and documentation
+9. ⏳ Phase 10: Release preparation
 
 ## Configuration
 
@@ -134,3 +144,8 @@ active_api = "official"
 - Health checking for configured APIs  
 - Management REST API for configuration
 - Request/response logging and monitoring
+- Colorized CLI output with beautiful table formatting
+- Multi-platform binary builds (Windows, macOS, Linux - all architectures)
+- Version-controlled release naming convention
+- Automatic update system with GitHub Releases integration (Phase 8)
+- CI/CD pipeline with GitHub Actions for automated builds and releases
