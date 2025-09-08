@@ -22,7 +22,7 @@ BINARY_NAME="octopus"
 
 # Banner
 print_banner() {
-    echo -e "${PURPLE}"
+    printf "${PURPLE}\n"
     echo "  ╔═══════════════════════════════════════╗"
     echo "  ║                                       ║"
     echo "  ║           🐙 Octopus CLI              ║"
@@ -30,24 +30,24 @@ print_banner() {
     echo "  ║     Dynamic Claude Code API Tool      ║"
     echo "  ║                                       ║"
     echo "  ╚═══════════════════════════════════════╝"
-    echo -e "${NC}"
+    printf "${NC}\n"
 }
 
 # Logging functions
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    printf "${BLUE}[INFO]${NC} %s\n" "$1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    printf "${GREEN}[SUCCESS]${NC} %s\n" "$1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    printf "${YELLOW}[WARN]${NC} %s\n" "$1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    printf "${RED}[ERROR]${NC} %s\n" "$1"
 }
 
 # Detect OS and architecture
@@ -179,9 +179,9 @@ verify_installation() {
 # Show post-install instructions
 show_instructions() {
     echo ""
-    echo -e "${WHITE}🎉 Installation Complete!${NC}"
+    printf "${WHITE}🎉 Installation Complete!${NC}\n"
     echo ""
-    echo -e "${CYAN}Quick Start:${NC}"
+    printf "${CYAN}Quick Start:${NC}\n"
     echo "  1. Add API configuration:"
     echo "     octopus config add official https://api.anthropic.com sk-ant-your-key"
     echo ""
@@ -193,12 +193,12 @@ show_instructions() {
     echo "  4. Switch APIs dynamically:"
     echo "     octopus config switch <api-name>"
     echo ""
-    echo -e "${CYAN}More Information:${NC}"
+    printf "${CYAN}More Information:${NC}\n"
     echo "  • Documentation: https://github.com/${GITHUB_REPO}/blob/main/README.md"
     echo "  • 中文文档: https://github.com/${GITHUB_REPO}/blob/main/README_CN.md"
     echo "  • Get help: octopus --help"
     echo ""
-    echo -e "${GREEN}Happy coding with Octopus CLI! 🐙${NC}"
+    printf "${GREEN}Happy coding with Octopus CLI! 🐙${NC}\n"
 }
 
 # Cleanup function
