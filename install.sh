@@ -5,6 +5,13 @@
 
 set -e  # Exit on any error
 
+# Check if we're running in bash, if not try to re-execute with bash
+if [ -z "$BASH_VERSION" ]; then
+    if command -v bash >/dev/null 2>&1; then
+        exec bash "$0" "$@"
+    fi
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -80,7 +87,6 @@ detect_platform() {
 # Get the latest release version
 get_latest_version() {
     local version
-    log_info "Fetching latest release version..."
     
     if command -v curl >/dev/null 2>&1; then
         version=$(curl -fsSL "https://api.github.com/repos/${GITHUB_REPO}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -229,6 +235,7 @@ main() {
     
     # Get latest version
     local version
+    log_info "Fetching latest release version..."
     version=$(get_latest_version)
     log_info "Latest version: $version"
     
