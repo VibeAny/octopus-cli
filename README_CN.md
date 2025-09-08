@@ -29,6 +29,16 @@ Octopus CLI 是一个强大的命令行工具，解决了频繁切换 Claude Cod
 
 ### 安装
 
+**一键安装 (推荐):**
+
+```bash
+# 一条命令安装最新版本 (类似 oh-my-zsh)
+curl -fsSL https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
+
+# 或者使用 wget
+wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
+```
+
 **下载预编译二进制文件：**
 
 ```bash

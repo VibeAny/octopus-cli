@@ -29,6 +29,16 @@ Octopus CLI is a powerful command-line tool that solves the pain point of freque
 
 ### Installation
 
+**One-Command Install (Recommended):**
+
+```bash
+# Install latest version with one command (like oh-my-zsh)
+curl -fsSL https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
+
+# Or using wget
+wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
+```
+
 **Download Pre-built Binaries:**
 
 ```bash
