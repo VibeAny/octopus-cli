@@ -7,7 +7,7 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/VibeAny/octopus-cli)
 [![Functional Tests](https://img.shields.io/badge/functional_tests-26/26_passing-brightgreen)](test/reports/test-report.md)
 
-> = A command-line tool for dynamic Claude Code API management and forwarding
+> 🐙 A command-line tool for dynamic Claude Code API management and forwarding
 
 ## Overview
 
@@ -15,13 +15,15 @@ Octopus CLI is a powerful command-line tool that solves the pain point of freque
 
 ## Key Features
 
-- =� **Dynamic API Switching** - Switch between API providers instantly without restarts
-- =� **TOML Configuration** - Clean, readable configuration format
-- =� **CLI Interface** - Intuitive command-line operations
-- = **Local Proxy** - Transparent HTTP proxy for Claude Code
-- <� **Health Checking** - Monitor API endpoint availability
-- =� **Request Logging** - Track and monitor API usage
-- = **Secure** - API keys stored securely with proper permissions
+- 🔀 **Dynamic API Switching** - Switch between API providers instantly without restarts
+- 📄 **TOML Configuration** - Clean, readable configuration format
+- 💻 **CLI Interface** - Intuitive command-line operations with colorized output
+- 🔄 **Local Proxy** - Transparent HTTP proxy for Claude Code
+- 🏥 **Health Checking** - Monitor API endpoint availability
+- 📊 **Request Logging** - Track and monitor API usage
+- 🔒 **Secure** - API keys stored securely with proper permissions
+- 🎨 **Beautiful UI** - Colorized tables and status indicators with proper alignment
+- 🌍 **Multi-Platform** - Native binaries for Windows, macOS, Linux (all architectures)
 
 ## Quick Start
 
@@ -235,6 +237,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- =� [Documentation](docs/)
-- = [Issue Tracker](https://github.com/VibeAny/octopus-cli/issues)
-- =� [Discussions](https://github.com/VibeAny/octopus-cli/discussions)
+- 📚 [Documentation](docs/)
+- 🐛 [Issue Tracker](https://github.com/VibeAny/octopus-cli/issues)
+- 💬 [Discussions](https://github.com/VibeAny/octopus-cli/discussions)
