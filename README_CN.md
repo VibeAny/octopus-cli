@@ -7,7 +7,7 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/VibeAny/octopus-cli)
 [![Functional Tests](https://img.shields.io/badge/functional_tests-26/26_passing-brightgreen)](test/reports/test-report.md)
 
-> 🐙 动态Claude Code API管理和转发的命令行工具
+> 🐙 动态 Claude Code API 管理和转发的命令行工具
 
 ## 概述
 
@@ -15,13 +15,13 @@ Octopus CLI 是一个强大的命令行工具，解决了频繁切换 Claude Cod
 
 ## 核心功能
 
-- 🔀 **动态API切换** - 即时切换API提供商无需重启
-- 📄 **TOML配置** - 清晰易读的配置格式
-- 💻 **CLI界面** - 直观的命令行操作和彩色输出
-- 🔄 **本地代理** - 为Claude Code提供透明HTTP代理
-- 🏥 **健康检查** - 监控API端点可用性
-- 📊 **请求日志** - 跟踪和监控API使用情况
-- 🔒 **安全** - API密钥安全存储，权限管理
+- 🔀 **动态 API 切换** - 即时切换 API 提供商无需重启
+- 📄 **TOML 配置** - 清晰易读的配置格式
+- 💻 **CLI 界面** - 直观的命令行操作和彩色输出
+- 🔄 **本地代理** - 为 Claude Code 提供透明 HTTP 代理
+- 🏥 **健康检查** - 监控 API 端点可用性
+- 📊 **请求日志** - 跟踪和监控 API 使用情况
+- 🔒 **安全** - API 密钥安全存储，权限管理
 - 🎨 **美观界面** - 彩色表格和状态指示器，支持正确对齐
 - 🌍 **多平台** - Windows, macOS, Linux 原生二进制文件（支持所有架构）
 
@@ -29,13 +29,18 @@ Octopus CLI 是一个强大的命令行工具，解决了频繁切换 Claude Cod
 
 ### 安装
 
-**一键安装 (推荐):**
+**快速安装 (推荐):**
+
+#### 快速安装最新版本
 
 ```bash
-# 一条命令安装最新版本 (类似 oh-my-zsh)
 curl -fsSL https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
+```
 
-# 或者使用 wget
+#### 或者使用 wget
+
+```bash
+
 wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
 ```
 
@@ -44,7 +49,7 @@ wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh 
 ```bash
 # 支持的平台：
 # - Windows: amd64, arm64, 386
-# - macOS: amd64, arm64 
+# - macOS: amd64, arm64
 # - Linux: amd64, arm64, 386
 
 # macOS ARM64 (Apple Silicon) 示例
@@ -85,20 +90,23 @@ octopus health
 ## 命令
 
 ### 服务管理
+
 - `octopus start` - 启动代理服务
 - `octopus stop` - 停止代理服务
 - `octopus status` - 显示服务状态
 - `octopus restart` - 重启服务
 
 ### 配置管理
-- `octopus config list` - 列出所有API配置
-- `octopus config add <名称> <URL> <密钥>` - 添加新的API配置
-- `octopus config switch <名称>` - 切换到指定API配置
+
+- `octopus config list` - 列出所有 API 配置
+- `octopus config add <名称> <URL> <密钥>` - 添加新的 API 配置
+- `octopus config switch <名称>` - 切换到指定 API 配置
 - `octopus config show <名称>` - 显示配置详情
-- `octopus config remove <名称>` - 删除API配置
+- `octopus config remove <名称>` - 删除 API 配置
 
 ### 监控与诊断
-- `octopus health` - 检查API端点健康状态
+
+- `octopus health` - 检查 API 端点健康状态
 - `octopus logs` - 查看服务日志
 - `octopus version` - 显示版本信息
 
@@ -107,6 +115,7 @@ octopus health
 Octopus CLI 使用 TOML 配置文件。默认位置是当前目录的 `configs/default.toml`。
 
 配置示例：
+
 ```toml
 [server]
 port = 8080
@@ -135,10 +144,12 @@ active_api = "official"
 本项目严格遵循 **测试驱动开发 (TDD)** 方法论。所有贡献都必须包含完整的测试。
 
 ### 前置要求
+
 - Go 1.21 或更高版本
 - Make
 
 ### 开发环境设置
+
 ```bash
 # 克隆仓库
 git clone https://github.com/VibeAny/octopus-cli.git
@@ -150,7 +161,7 @@ go mod download
 # 运行测试
 make test
 
-# 运行功能测试  
+# 运行功能测试
 ./test/scripts/run-functional-tests.sh
 
 # 运行覆盖率测试
@@ -166,6 +177,7 @@ make build-all
 ### 多平台构建
 
 支持的平台：
+
 - **Windows**: amd64, arm64, 386
 - **macOS**: amd64 (Intel), arm64 (Apple Silicon)
 - **Linux**: amd64, arm64, 386
@@ -173,11 +185,13 @@ make build-all
 所有二进制文件使用命名规范：`octopus-v0.0.1-platform-YYYYMMDD.git_sha`
 
 ### TDD 工作流
+
 1. **红色**: 编写失败的测试
 2. **绿色**: 编写最小代码使测试通过
 3. **重构**: 在保持测试通过的同时改进代码
 
 ### 贡献
+
 1. Fork 仓库
 2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
 3. 为你的更改编写测试
@@ -195,20 +209,20 @@ graph TB
     B -->|转发请求| C[目标 API<br/>可配置]
     C -->|响应| B
     B -->|响应| A
-    
+
     D[CLI 命令<br/>配置管理] -->|配置| B
     B -->|状态管理| E[settings.toml<br/>configs/]
-    
+
     subgraph "API 端点"
         F[Anthropic Official]
-        G[代理服务] 
+        G[代理服务]
         H[自定义 APIs]
     end
-    
+
     C -.->|动态切换| F
-    C -.->|动态切换| G  
+    C -.->|动态切换| G
     C -.->|动态切换| H
-    
+
     style B fill:#e1f5fe
     style D fill:#f3e5f5
     style E fill:#fff3e0
@@ -217,27 +231,27 @@ graph TB
 ## 路线图
 
 - [x] Phase 1: 项目设置与文档
-- [x] Phase 2: Go 项目初始化  
+- [x] Phase 2: Go 项目初始化
 - [x] Phase 3: CLI 架构实现
 - [x] Phase 4: 核心代理功能 (TDD)
 - [x] Phase 5: CLI 命令实现 (TDD)
 - [x] Phase 6: 用户体验优化 ✨ **完成**
   - [x] 彩色输出和美观表格格式化
-  - [x] 多平台构建系统 (8个平台)
+  - [x] 多平台构建系统 (8 个平台)
   - [x] 彩色文本表格对齐修复
 - [ ] Phase 7: 测试与文档
 - [ ] Phase 8: 发布准备
 
-**当前状态**: 🚀 **增强MVP** - 核心功能 + UX优化完成
+**当前状态**: 🚀 **增强 MVP** - 核心功能 + UX 优化完成
 
 ## 测试
 
 本项目保持高质量标准和完整测试：
 
-- **单元测试**: 126个测试覆盖所有模块
-- **功能测试**: 26个测试覆盖端到端场景  
+- **单元测试**: 126 个测试覆盖所有模块
+- **功能测试**: 26 个测试覆盖端到端场景
 - **测试覆盖率**: 100% 功能覆盖率
-- **TDD方法论**: 所有功能都采用测试先行开发
+- **TDD 方法论**: 所有功能都采用测试先行开发
 
 查看 [测试文档](test/) 了解更多详情。
 
@@ -254,4 +268,4 @@ graph TB
 ## 致谢
 
 - 感谢 Claude Code 团队创建了如此出色的开发工具
-- 灵感来源于开发工作流中对无缝API切换的需求
+- 灵感来源于开发工作流中对无缝 API 切换的需求

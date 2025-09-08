@@ -31,11 +31,15 @@ Octopus CLI is a powerful command-line tool that solves the pain point of freque
 
 **One-Command Install (Recommended):**
 
-```bash
-# Install latest version with one command (like oh-my-zsh)
-curl -fsSL https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
+#### Install latest version with one command
 
-# Or using wget
+```bash
+curl -fsSL https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
+```
+
+#### Or using wget
+
+```bash
 wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
 ```
 
@@ -44,7 +48,7 @@ wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh 
 ```bash
 # Available platforms:
 # - Windows: amd64, arm64, 386
-# - macOS: amd64, arm64 
+# - macOS: amd64, arm64
 # - Linux: amd64, arm64, 386
 
 # Example for macOS ARM64 (Apple Silicon)
@@ -85,12 +89,14 @@ octopus health
 ## Commands
 
 ### Service Management
+
 - `octopus start` - Start the proxy service
 - `octopus stop` - Stop the proxy service
 - `octopus status` - Show service status
 - `octopus restart` - Restart the service
 
 ### Configuration Management
+
 - `octopus config list` - List all API configurations
 - `octopus config add <name> <url> <key>` - Add new API configuration
 - `octopus config switch <name>` - Switch to specific API configuration
@@ -98,6 +104,7 @@ octopus health
 - `octopus config remove <name>` - Remove API configuration
 
 ### Monitoring & Diagnostics
+
 - `octopus health` - Check API endpoints health status
 - `octopus logs` - View service logs
 - `octopus version` - Show version information
@@ -107,6 +114,7 @@ octopus health
 Octopus CLI uses TOML configuration files. The default location is `~/.config/octopus/octopus.toml`.
 
 Example configuration:
+
 ```toml
 [server]
 port = 8080
@@ -135,10 +143,12 @@ active_api = "official"
 This project follows **Test-Driven Development (TDD)** methodology. All contributions must include comprehensive tests.
 
 ### Prerequisites
+
 - Go 1.21 or later
 - Make
 
 ### Development Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/VibeAny/octopus-cli.git
@@ -150,7 +160,7 @@ go mod download
 # Run tests
 make test
 
-# Run functional tests  
+# Run functional tests
 ./test/scripts/run-functional-tests.sh
 
 # Run tests with coverage
@@ -166,6 +176,7 @@ make build-all
 ### Multi-Platform Builds
 
 Supported platforms:
+
 - **Windows**: amd64, arm64, 386
 - **macOS**: amd64 (Intel), arm64 (Apple Silicon)
 - **Linux**: amd64, arm64, 386
@@ -173,11 +184,13 @@ Supported platforms:
 All binaries use the naming convention: `octopus-v0.0.1-platform-YYYYMMDD.git_sha`
 
 ### TDD Workflow
+
 1. **Red**: Write a failing test
 2. **Green**: Write minimal code to make the test pass
 3. **Refactor**: Improve the code while keeping tests green
 
 ### Contributing
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Write tests for your changes
@@ -195,20 +208,20 @@ graph TB
     B -->|Forward Requests| C[Target API<br/>Configurable]
     C -->|Response| B
     B -->|Response| A
-    
+
     D[CLI Commands<br/>Configuration] -->|Configure| B
     B -->|State Management| E[settings.toml<br/>configs/]
-    
+
     subgraph "API Endpoints"
         F[Anthropic Official]
-        G[Proxy Services] 
+        G[Proxy Services]
         H[Custom APIs]
     end
-    
+
     C -.->|Dynamic Switch| F
-    C -.->|Dynamic Switch| G  
+    C -.->|Dynamic Switch| G
     C -.->|Dynamic Switch| H
-    
+
     style B fill:#e1f5fe
     style D fill:#f3e5f5
     style E fill:#fff3e0
@@ -217,7 +230,7 @@ graph TB
 ## Roadmap
 
 - [x] Phase 1: Project Setup & Documentation
-- [x] Phase 2: Go Project Initialization  
+- [x] Phase 2: Go Project Initialization
 - [x] Phase 3: CLI Architecture Implementation
 - [x] Phase 4: Core Proxy Functionality (TDD)
 - [x] Phase 5: CLI Command Implementation (TDD)
@@ -235,7 +248,7 @@ graph TB
 This project maintains high quality standards with comprehensive testing:
 
 - **Unit Tests**: 126 tests covering all modules
-- **Functional Tests**: 26 tests covering end-to-end scenarios  
+- **Functional Tests**: 26 tests covering end-to-end scenarios
 - **Test Coverage**: 100% functional coverage
 - **TDD Methodology**: All features developed test-first
 
