@@ -250,7 +250,17 @@ func (s *Server) forwardRequest(w http.ResponseWriter, r *http.Request, api *con
 	targetURL.Path = r.URL.Path
 	targetURL.RawQuery = r.URL.RawQuery
 
-	targetReq, err := http.NewRequest(r.Method, targetURL.String(), r.Body)
+	// Configure timeout
+	timeout := time.Duration(api.Timeout) * time.Second
+	if timeout <= 0 {
+		timeout = 30 * time.Second // default timeout
+	}
+
+	// Create request with timeout context
+	ctx, cancel := context.WithTimeout(r.Context(), timeout)
+	defer cancel()
+
+	targetReq, err := http.NewRequestWithContext(ctx, r.Method, targetURL.String(), r.Body)
 	if err != nil {
 		return fmt.Errorf("failed to create target request: %w", err)
 	}
@@ -267,9 +277,9 @@ func (s *Server) forwardRequest(w http.ResponseWriter, r *http.Request, api *con
 		targetReq.Header.Set("Authorization", "Bearer "+api.APIKey)
 	}
 
-	// Make request to target
+	// Make request to target (using the timeout from context)
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: timeout,
 		Transport: &http.Transport{
 			Proxy: nil, // Disable proxy to get direct connection errors
 		},

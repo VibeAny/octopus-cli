@@ -1,0 +1,43 @@
+name: octopus-cli
+base: core22
+version: '0.0.1'
+summary: Dynamic Claude Code API management and forwarding tool
+description: |
+  Octopus CLI is a powerful command-line tool that solves the pain point 
+  of frequently switching Claude Code API providers. Instead of manually 
+  modifying environment variables and restarting Claude Code each time, 
+  Octopus CLI provides a local proxy service that allows you to dynamically 
+  switch between multiple API configurations without any restarts.
+
+grade: stable
+confinement: strict
+
+parts:
+  octopus-cli:
+    plugin: go
+    source: .
+    source-type: git
+    build-snaps: [go]
+    build-environment:
+      - CGO_ENABLED: "0"
+    override-build: |
+      cd $CRAFT_PART_SRC
+      go mod download
+      go build -ldflags "-X main.version=${CRAFT_PROJECT_VERSION}" -o $CRAFT_PART_INSTALL/bin/octopus ./cmd
+
+apps:
+  octopus-cli:
+    command: bin/octopus
+    aliases: [octopus]
+    plugs:
+      - home
+      - network
+      - network-bind
+
+plugs:
+  home:
+    interface: home
+  network:
+    interface: network
+  network-bind:
+    interface: network-bind

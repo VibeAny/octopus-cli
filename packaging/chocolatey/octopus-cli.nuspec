@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>octopus-cli</id>
+    <version>0.0.1</version>
+    <title>Octopus CLI</title>
+    <authors>VibeAny</authors>
+    <owners>VibeAny</owners>
+    <licenseUrl>https://github.com/VibeAny/octopus-cli/blob/main/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/VibeAny/octopus-cli</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Dynamic Claude Code API management and forwarding tool. Switch between API providers instantly without restarts.</description>
+    <summary>CLI tool for dynamic Claude Code API switching</summary>
+    <releaseNotes>First stable release with core functionality including dynamic API switching, colorized output, and multi-platform support.</releaseNotes>
+    <copyright>Copyright 2024 VibeAny</copyright>
+    <tags>cli go api proxy claude-code development-tools</tags>
+    <packageSourceUrl>https://github.com/VibeAny/octopus-cli</packageSourceUrl>
+    <docsUrl>https://github.com/VibeAny/octopus-cli/blob/main/README.md</docsUrl>
+    <bugTrackerUrl>https://github.com/VibeAny/octopus-cli/issues</bugTrackerUrl>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

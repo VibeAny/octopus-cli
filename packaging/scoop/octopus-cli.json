@@ -1,0 +1,40 @@
+# Scoop Manifest for Octopus CLI
+{
+    "version": "0.0.1",
+    "description": "Dynamic Claude Code API management and forwarding tool",
+    "homepage": "https://github.com/VibeAny/octopus-cli",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/VibeAny/octopus-cli/releases/download/v0.0.1/octopus-v0.0.1-windows-amd64-20250908.d4d58298.exe",
+            "hash": "REPLACE_WITH_SHA256",
+            "bin": [["octopus-v0.0.1-windows-amd64-20250908.d4d58298.exe", "octopus"]]
+        },
+        "32bit": {
+            "url": "https://github.com/VibeAny/octopus-cli/releases/download/v0.0.1/octopus-v0.0.1-windows-386-20250908.d4d58298.exe",
+            "hash": "REPLACE_WITH_SHA256",
+            "bin": [["octopus-v0.0.1-windows-386-20250908.d4d58298.exe", "octopus"]]
+        },
+        "arm64": {
+            "url": "https://github.com/VibeAny/octopus-cli/releases/download/v0.0.1/octopus-v0.0.1-windows-arm64-20250908.d4d58298.exe",
+            "hash": "REPLACE_WITH_SHA256",
+            "bin": [["octopus-v0.0.1-windows-arm64-20250908.d4d58298.exe", "octopus"]]
+        }
+    },
+    "checkver": {
+        "github": "https://github.com/VibeAny/octopus-cli"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/VibeAny/octopus-cli/releases/download/v$version/octopus-v$version-windows-amd64-$matchDate.$matchCommit.exe"
+            },
+            "32bit": {
+                "url": "https://github.com/VibeAny/octopus-cli/releases/download/v$version/octopus-v$version-windows-386-$matchDate.$matchCommit.exe"
+            },
+            "arm64": {
+                "url": "https://github.com/VibeAny/octopus-cli/releases/download/v$version/octopus-v$version-windows-arm64-$matchDate.$matchCommit.exe"
+            }
+        }
+    }
+}
