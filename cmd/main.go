@@ -1390,6 +1390,14 @@ func newUpgradeCommand(configFile *string, version string) *cobra.Command {
 
 			cmd.Printf("✅ Upgrade completed successfully!\n")
 			cmd.Printf("🎉 Octopus CLI has been upgraded to %s\n", utils.FormatHighlight(latestRelease.TagName))
+
+			// Check if service was running and restart if needed
+			cmd.Printf("🔄 Checking for running service...\n")
+			if err := handleServiceRestart(cmd, *configFile); err != nil {
+				cmd.Printf("⚠️  Warning: Failed to restart service: %v\n", err)
+				cmd.Printf("💡 Please manually restart the service with 'octopus start'\n")
+			}
+
 			cmd.Printf("💡 Restart your terminal or run 'octopus version' to verify the upgrade.\n")
 
 			return nil
@@ -1401,6 +1409,77 @@ func newUpgradeCommand(configFile *string, version string) *cobra.Command {
 	cmd.Flags().BoolVar(&force, "force", false, "Install upgrade without confirmation")
 
 	return cmd
+}
+
+// handleServiceRestart checks if service is running and restarts it after upgrade
+func handleServiceRestart(cmd *cobra.Command, configFile string) error {
+	// Create state manager for config management
+	stateManager, err := state.NewManager()
+	if err != nil {
+		return fmt.Errorf("failed to create state manager: %w", err)
+	}
+
+	// Resolve config file path
+	cfgPath, _, err := getConfigPath(configFile, stateManager)
+	if err != nil {
+		return fmt.Errorf("failed to resolve config file: %w", err)
+	}
+
+	// Create service manager to check current status
+	serviceManager, err := NewServiceManager(cfgPath)
+	if err != nil {
+		return fmt.Errorf("failed to create service manager: %w", err)
+	}
+
+	// Check if service is currently running
+	status, err := serviceManager.Status()
+	if err != nil {
+		return fmt.Errorf("failed to check service status: %w", err)
+	}
+
+	if !status.IsRunning {
+		cmd.Printf("📋 Service was not running - no restart needed\n")
+		return nil
+	}
+
+	cmd.Printf("🔄 Service is running - restarting with upgraded binary...\n")
+
+	// Stop the current service
+	cmd.Printf("⏹️  Stopping current service...\n")
+	if err := serviceManager.Stop(); err != nil {
+		return fmt.Errorf("failed to stop service: %w", err)
+	}
+
+	// Brief pause to ensure cleanup
+	time.Sleep(1 * time.Second)
+
+	// Start the service with the new binary
+	cmd.Printf("▶️  Starting service with upgraded binary...\n")
+	if err := serviceManager.Start(); err != nil {
+		return fmt.Errorf("failed to start upgraded service: %w", err)
+	}
+
+	// Verify the service started successfully
+	newStatus, err := serviceManager.Status()
+	if err != nil {
+		return fmt.Errorf("failed to verify service restart: %w", err)
+	}
+
+	if newStatus.IsRunning {
+		cmd.Printf("✅ Service restarted successfully with upgraded binary\n")
+		cmd.Printf("📋 Service running on port %d with PID %d\n", newStatus.Port, newStatus.PID)
+		
+		// Log the upgrade to service log file
+		logMessage := fmt.Sprintf("Service upgraded and restarted with new binary version")
+		if err := logToServiceFile(cfgPath, logMessage); err != nil {
+			// Don't fail if logging fails
+			cmd.Printf("Warning: Failed to log upgrade: %v\n", err)
+		}
+	} else {
+		return fmt.Errorf("service failed to start after upgrade")
+	}
+
+	return nil
 }
 
 // formatBytes formats bytes as human readable string (helper for CLI use)
