@@ -1290,7 +1290,7 @@ func newUpgradeCommand(configFile *string, version string) *cobra.Command {
 			// Display upgrade information
 			upgradeInfo := utils.FormatUpdateInfo(version, latestRelease.TagName, latestRelease)
 			// Update the text to use "upgrade"
-			upgradeInfo = strings.Replace(upgradeInfo, "octopus update", "octopus upgrade", -1)
+			upgradeInfo = strings.ReplaceAll(upgradeInfo, "octopus update", "octopus upgrade")
 			cmd.Printf("%s\n", upgradeInfo)
 
 			// If check-only mode, just return
@@ -1314,6 +1314,16 @@ func newUpgradeCommand(configFile *string, version string) *cobra.Command {
 
 			// Proceed with upgrade
 			cmd.Printf("\n🚀 Starting upgrade process...\n")
+
+			// Check if service is running and stop it before upgrade
+			var wasServiceRunning bool
+			var serviceConfigFile string
+			cmd.Printf("🔍 Checking for running service...\n")
+			if err := stopServiceBeforeUpgrade(cmd, *configFile, &wasServiceRunning, &serviceConfigFile); err != nil {
+				cmd.Printf("⚠️  Warning: Failed to stop service before upgrade: %v\n", err)
+				cmd.Printf("💡 Please manually stop the service with 'octopus stop' before continuing\n")
+				return err
+			}
 
 			// Create update manager
 			updateManager := utils.NewUpdateManager("VibeAny/octopus-cli", version)
@@ -1391,11 +1401,17 @@ func newUpgradeCommand(configFile *string, version string) *cobra.Command {
 			cmd.Printf("✅ Upgrade completed successfully!\n")
 			cmd.Printf("🎉 Octopus CLI has been upgraded to %s\n", utils.FormatHighlight(latestRelease.TagName))
 
-			// Check if service was running and restart if needed
-			cmd.Printf("🔄 Checking for running service...\n")
-			if err := handleServiceRestart(cmd, *configFile); err != nil {
-				cmd.Printf("⚠️  Warning: Failed to restart service: %v\n", err)
-				cmd.Printf("💡 Please manually restart the service with 'octopus start'\n")
+			// Restart service if it was running before upgrade
+			if wasServiceRunning {
+				cmd.Printf("🔄 Restarting service with new binary...\n")
+				if err := startServiceAfterUpgrade(cmd, serviceConfigFile); err != nil {
+					cmd.Printf("⚠️  Warning: Failed to restart service: %v\n", err)
+					cmd.Printf("💡 Please manually restart the service with 'octopus start'\n")
+				} else {
+					cmd.Printf("✅ Service restarted successfully with upgraded binary\n")
+				}
+			} else {
+				cmd.Printf("📋 Service was not running - no restart needed\n")
 			}
 
 			cmd.Printf("💡 Restart your terminal or run 'octopus version' to verify the upgrade.\n")
@@ -1411,8 +1427,8 @@ func newUpgradeCommand(configFile *string, version string) *cobra.Command {
 	return cmd
 }
 
-// handleServiceRestart checks if service is running and restarts it after upgrade
-func handleServiceRestart(cmd *cobra.Command, configFile string) error {
+// stopServiceBeforeUpgrade checks if service is running and stops it before upgrade
+func stopServiceBeforeUpgrade(cmd *cobra.Command, configFile string, wasRunning *bool, serviceConfigPath *string) error {
 	// Create state manager for config management
 	stateManager, err := state.NewManager()
 	if err != nil {
@@ -1424,6 +1440,9 @@ func handleServiceRestart(cmd *cobra.Command, configFile string) error {
 	if err != nil {
 		return fmt.Errorf("failed to resolve config file: %w", err)
 	}
+
+	// Store the config path for later restart
+	*serviceConfigPath = cfgPath
 
 	// Create service manager to check current status
 	serviceManager, err := NewServiceManager(cfgPath)
@@ -1437,12 +1456,14 @@ func handleServiceRestart(cmd *cobra.Command, configFile string) error {
 		return fmt.Errorf("failed to check service status: %w", err)
 	}
 
+	*wasRunning = status.IsRunning
+
 	if !status.IsRunning {
-		cmd.Printf("📋 Service was not running - no restart needed\n")
+		cmd.Printf("📋 No running service found - proceeding with upgrade\n")
 		return nil
 	}
 
-	cmd.Printf("🔄 Service is running - restarting with upgraded binary...\n")
+	cmd.Printf("🔄 Service is running (PID: %d) - stopping before upgrade...\n", status.PID)
 
 	// Stop the current service
 	cmd.Printf("⏹️  Stopping current service...\n")
@@ -1453,11 +1474,34 @@ func handleServiceRestart(cmd *cobra.Command, configFile string) error {
 	// Brief pause to ensure cleanup
 	time.Sleep(1 * time.Second)
 
+	cmd.Printf("✅ Service stopped successfully\n")
+
+	// Log the stop to service log file
+	logMessage := "Service stopped for upgrade process"
+	if err := logToServiceFile(cfgPath, logMessage); err != nil {
+		// Don't fail if logging fails
+		cmd.Printf("Warning: Failed to log service stop: %v\n", err)
+	}
+
+	return nil
+}
+
+// startServiceAfterUpgrade starts the service with the new binary after upgrade
+func startServiceAfterUpgrade(cmd *cobra.Command, configPath string) error {
+	// Create service manager with the config path
+	serviceManager, err := NewServiceManager(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to create service manager: %w", err)
+	}
+
 	// Start the service with the new binary
 	cmd.Printf("▶️  Starting service with upgraded binary...\n")
 	if err := serviceManager.Start(); err != nil {
 		return fmt.Errorf("failed to start upgraded service: %w", err)
 	}
+
+	// Brief pause to allow service to initialize
+	time.Sleep(2 * time.Second)
 
 	// Verify the service started successfully
 	newStatus, err := serviceManager.Status()
@@ -1466,14 +1510,14 @@ func handleServiceRestart(cmd *cobra.Command, configFile string) error {
 	}
 
 	if newStatus.IsRunning {
-		cmd.Printf("✅ Service restarted successfully with upgraded binary\n")
+		cmd.Printf("✅ Service started successfully with upgraded binary\n")
 		cmd.Printf("📋 Service running on port %d with PID %d\n", newStatus.Port, newStatus.PID)
 		
-		// Log the upgrade to service log file
-		logMessage := fmt.Sprintf("Service upgraded and restarted with new binary version")
-		if err := logToServiceFile(cfgPath, logMessage); err != nil {
+		// Log the restart to service log file
+		logMessage := "Service started with upgraded binary version"
+		if err := logToServiceFile(configPath, logMessage); err != nil {
 			// Don't fail if logging fails
-			cmd.Printf("Warning: Failed to log upgrade: %v\n", err)
+			cmd.Printf("Warning: Failed to log service restart: %v\n", err)
 		}
 	} else {
 		return fmt.Errorf("service failed to start after upgrade")

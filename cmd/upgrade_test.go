@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHandleServiceRestart_WithNoRunningService_ShouldSkipRestart(t *testing.T) {
+func TestStopServiceBeforeUpgrade_WithNoRunningService_ShouldSetWasRunningFalse(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test.toml")
@@ -35,16 +35,21 @@ active_api = "test-api"
 	cmd.SetOut(&output)
 	cmd.SetErr(&output)
 
+	var wasRunning bool
+	var serviceConfigPath string
+
 	// Act
-	err := handleServiceRestart(cmd, configFile)
+	err := stopServiceBeforeUpgrade(cmd, configFile, &wasRunning, &serviceConfigPath)
 
 	// Assert
 	require.NoError(t, err)
+	assert.False(t, wasRunning, "wasRunning should be false when no service is running")
+	assert.Equal(t, configFile, serviceConfigPath, "serviceConfigPath should be set to the config file")
 	outputStr := output.String()
-	assert.Contains(t, outputStr, "Service was not running - no restart needed")
+	assert.Contains(t, outputStr, "No running service found - proceeding with upgrade")
 }
 
-func TestHandleServiceRestart_WithInvalidConfig_ShouldReturnError(t *testing.T) {
+func TestStopServiceBeforeUpgrade_WithInvalidConfig_ShouldReturnError(t *testing.T) {
 	// Arrange
 	invalidConfigFile := "/path/that/does/not/exist.toml"
 	
@@ -54,16 +59,18 @@ func TestHandleServiceRestart_WithInvalidConfig_ShouldReturnError(t *testing.T) 
 	cmd.SetOut(&output)
 	cmd.SetErr(&output)
 
+	var wasRunning bool
+	var serviceConfigPath string
+
 	// Act
-	err := handleServiceRestart(cmd, invalidConfigFile)
+	err := stopServiceBeforeUpgrade(cmd, invalidConfigFile, &wasRunning, &serviceConfigPath)
 
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to resolve config file")
 }
 
-func TestHandleServiceRestart_FunctionSignature_ShouldAcceptCorrectParameters(t *testing.T) {
-	// This test verifies the function signature is correct
+func TestStartServiceAfterUpgrade_WithValidConfig_ShouldStartService(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test.toml")
@@ -83,8 +90,8 @@ active_api = ""
 
 	// Act & Assert - function should be callable with these parameters
 	assert.NotPanics(t, func() {
-		_ = handleServiceRestart(cmd, configFile)
-	}, "handleServiceRestart should accept Command and config file path")
+		_ = startServiceAfterUpgrade(cmd, configFile)
+	}, "startServiceAfterUpgrade should accept Command and config file path")
 }
 
 func TestUpgradeCommand_Properties_ShouldHaveCorrectConfiguration(t *testing.T) {
