@@ -4,7 +4,7 @@
 
 # Variables
 BINARY_NAME=octopus
-VERSION?=v0.0.2
+VERSION?=v0.0.3
 DATE=$(shell date +%Y%m%d)
 GIT_SHA=$(shell git rev-parse --short=8 HEAD)
 LDFLAGS=-ldflags "-X main.version=${VERSION}"
