@@ -18,11 +18,13 @@ Octopus CLI 是一个强大的命令行工具，解决了频繁切换 Claude Cod
 - 🔀 **动态 API 切换** - 即时切换 API 提供商无需重启
 - 📄 **TOML 配置** - 清晰易读的配置格式
 - 💻 **CLI 界面** - 直观的命令行操作和彩色输出
+- 📝 **配置编辑器** - 使用系统默认编辑器编辑配置文件
 - 🔄 **本地代理** - 为 Claude Code 提供透明 HTTP 代理
 - 🏥 **健康检查** - 监控 API 端点可用性
-- 📊 **请求日志** - 跟踪和监控 API 使用情况
+- 📊 **请求日志** - 跟踪和监控 API 使用情况，支持实时日志跟踪
 - 🔒 **安全** - API 密钥安全存储，权限管理
 - 🎨 **美观界面** - 彩色表格和状态指示器，支持正确对齐
+- 🚀 **自动升级** - 与 GitHub Releases 集成的无缝升级系统
 - 🌍 **多平台** - Windows, macOS, Linux 原生二进制文件（支持所有架构）
 
 ## 快速开始
@@ -70,21 +72,86 @@ make build-all      # 编译所有平台
 ### 基本使用
 
 ```bash
-# 添加API配置
+# 1. 添加API配置
 octopus config add official https://api.anthropic.com sk-ant-xxx
 octopus config add proxy1 https://api.proxy1.com pk-xxx
 
-# 启动代理服务
+# 2. 启动代理服务
 octopus start
 
-# 配置 Claude Code 使用 http://localhost:8080
-# 现在您可以动态切换API：
+# 3. 配置 Claude Code 环境变量
+export ANTHROPIC_BASE_URL="http://localhost:8080"
+export ANTHROPIC_API_KEY="dummy-key-will-be-overridden"
+
+# 4. 现在您可以动态切换API：
 octopus config switch proxy1
 octopus config switch official
 
-# 检查状态
+# 5. 检查状态和健康
 octopus status
 octopus health
+
+# 6. 保持安装更新：
+octopus upgrade --check    # 检查升级
+octopus upgrade           # 升级到最新版本
+```
+
+### Claude Code 配置
+
+安装 Octopus CLI 后，您需要配置 Claude Code 使用本地代理：
+
+#### 方法1：环境变量 (推荐)
+
+**Linux/macOS:**
+```bash
+# 添加到您的 ~/.bashrc, ~/.zshrc, 或 ~/.profile
+export ANTHROPIC_BASE_URL="http://localhost:8080"
+export ANTHROPIC_API_KEY="dummy-key"  # 将被 Octopus 覆盖
+
+# 重新加载 shell 或运行：
+source ~/.bashrc  # 或 ~/.zshrc
+```
+
+**Windows PowerShell:**
+```powershell
+# 添加到您的 PowerShell 配置文件
+[Environment]::SetEnvironmentVariable("ANTHROPIC_BASE_URL", "http://localhost:8080", "User")
+[Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY", "dummy-key", "User")
+
+# 或仅为当前会话设置：
+$env:ANTHROPIC_BASE_URL = "http://localhost:8080"
+$env:ANTHROPIC_API_KEY = "dummy-key"
+```
+
+**Windows 命令提示符:**
+```cmd
+# 永久设置
+setx ANTHROPIC_BASE_URL "http://localhost:8080"
+setx ANTHROPIC_API_KEY "dummy-key"
+
+# 或仅为当前会话设置：
+set ANTHROPIC_BASE_URL=http://localhost:8080
+set ANTHROPIC_API_KEY=dummy-key
+```
+
+#### 方法2：Claude Code 设置
+
+通过 Claude Code 的设置界面配置使用本地代理端点 `http://localhost:8080`。具体方法取决于您的 Claude Code 版本和界面。
+
+请查阅 Claude Code 的文档了解适合您版本的具体配置方法。
+
+#### 验证配置
+
+验证配置是否正常工作：
+
+```bash
+# 启动 Octopus CLI
+octopus start
+
+# 检查 Claude Code 是否在使用代理
+octopus logs -f
+
+# 您应该在日志中看到来自 Claude Code 的请求
 ```
 
 ## 命令
@@ -103,16 +170,28 @@ octopus health
 - `octopus config switch <名称>` - 切换到指定 API 配置
 - `octopus config show <名称>` - 显示配置详情
 - `octopus config remove <名称>` - 删除 API 配置
+- `octopus config edit` - 使用系统编辑器编辑配置文件
 
 ### 监控与诊断
 
 - `octopus health` - 检查 API 端点健康状态
 - `octopus logs` - 查看服务日志
+- `octopus logs -f` - 实时跟踪服务日志
 - `octopus version` - 显示版本信息
+
+### 软件管理
+
+- `octopus upgrade` - 升级到最新版本
+- `octopus upgrade --check` - 检查可用升级但不安装
+- `octopus upgrade --force` - 强制升级无需确认
 
 ## 配置
 
-Octopus CLI 使用 TOML 配置文件。默认位置是当前目录的 `configs/default.toml`。
+Octopus CLI 使用 TOML 配置文件。配置文件的默认位置：
+
+- **Linux**: `~/.octopus/octopus.toml`
+- **macOS**: `~/Library/Application Support/Octopus/octopus.toml`
+- **Windows**: `%APPDATA%\Octopus\octopus.toml`
 
 配置示例：
 

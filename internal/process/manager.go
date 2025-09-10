@@ -33,7 +33,7 @@ func NewManager(pidFile, name string) *Manager {
 			pidFile = filepath.Join(execDir, pidFile)
 		}
 	}
-	
+
 	return &Manager{
 		pidFile: pidFile,
 		name:    name,

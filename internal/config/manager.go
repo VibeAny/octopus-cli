@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
@@ -19,7 +18,7 @@ func NewManager(configPath string) *Manager {
 	if configPath == "" {
 		configPath = defaultConfigPath()
 	}
-	
+
 	return &Manager{
 		configPath: configPath,
 		config:     DefaultConfig(),
@@ -101,12 +100,12 @@ func (m *Manager) RemoveAPIConfig(id string) error {
 		if api.ID == id {
 			// Remove the API from slice
 			m.config.APIs = append(m.config.APIs[:i], m.config.APIs[i+1:]...)
-			
+
 			// If this was the active API, clear the active setting
 			if m.config.Settings.ActiveAPI == id {
 				m.config.Settings.ActiveAPI = ""
 			}
-			
+
 			return m.SaveConfig(m.config)
 		}
 	}
@@ -168,15 +167,12 @@ func (m *Manager) GetConfig() *Config {
 
 // defaultConfigPath returns the default configuration file path
 func defaultConfigPath() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "./octopus.toml"
-	}
-	return filepath.Join(home, ".config", "octopus", "octopus.toml")
+	pm := GetDefaultPathManager()
+	return pm.ConfigFile()
 }
 
 // ensureConfigDir creates the configuration directory if it doesn't exist
 func (m *Manager) ensureConfigDir() error {
-	dir := filepath.Dir(m.configPath)
-	return os.MkdirAll(dir, 0755)
+	pm := GetDefaultPathManager()
+	return pm.EnsureDirs()
 }

@@ -22,7 +22,7 @@ func NewLogger(filePath string) (*Logger, error) {
 			filePath = filepath.Join(execDir, filePath)
 		}
 	}
-	
+
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {

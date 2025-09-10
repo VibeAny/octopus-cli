@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	
+
 	"octopus-cli/internal/config"
 	"octopus-cli/internal/process"
 	"octopus-cli/internal/proxy"
@@ -90,14 +90,14 @@ func (sm *ServiceManager) forkDaemon() error {
 	cmd := exec.Command(execPath, args...)
 	cmd.Env = os.Environ()
 	cmd.Dir = "/"
-	
+
 	// Redirect outputs to devnull for true daemon behavior
 	devNull, err := os.OpenFile(os.DevNull, os.O_RDWR, 0)
 	if err != nil {
 		return fmt.Errorf("failed to open devnull: %w", err)
 	}
 	defer devNull.Close()
-	
+
 	cmd.Stdin = devNull
 	cmd.Stdout = devNull
 	cmd.Stderr = devNull
@@ -165,13 +165,13 @@ func (sm *ServiceManager) Status() (*ServiceStatus, error) {
 	}
 
 	return &ServiceStatus{
-		IsRunning:    processStatus.IsRunning,
-		PID:          processStatus.PID,
-		Port:         cfg.Server.Port,
-		ActiveAPI:    cfg.Settings.ActiveAPI,
-		StartTime:    processStatus.StartTime,
-		Uptime:       processStatus.Uptime,
-		ProxyStats:   proxyStats,
+		IsRunning:  processStatus.IsRunning,
+		PID:        processStatus.PID,
+		Port:       cfg.Server.Port,
+		ActiveAPI:  cfg.Settings.ActiveAPI,
+		StartTime:  processStatus.StartTime,
+		Uptime:     processStatus.Uptime,
+		ProxyStats: proxyStats,
 	}, nil
 }
 

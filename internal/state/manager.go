@@ -25,7 +25,7 @@ func NewManager() (*Manager, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get executable path: %w", err)
 	}
-	
+
 	execDir := filepath.Dir(execPath)
 	settingsFile := filepath.Join(execDir, "settings.toml")
 

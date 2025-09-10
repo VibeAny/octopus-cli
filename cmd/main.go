@@ -1,14 +1,16 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -33,7 +35,7 @@ func logToServiceFile(configPath, message string) error {
 	if logFile == "" {
 		logFile = "logs/octopus.log"
 	}
-	
+
 	// Convert relative paths to absolute paths based on executable directory
 	if !filepath.IsAbs(logFile) {
 		if execPath, err := os.Executable(); err == nil {
@@ -52,7 +54,7 @@ func logToServiceFile(configPath, message string) error {
 	// Create logger and write message
 	logger := log.New(file, "", log.LstdFlags)
 	logger.Printf("[INFO] %s", message)
-	
+
 	return nil
 }
 
@@ -80,17 +82,17 @@ func handleConfigChange(configFile string, configChanged bool) error {
 
 	if status.IsRunning {
 		fmt.Printf("📝 Configuration changed, restarting daemon...\n")
-		
+
 		// Stop the current daemon
 		if err := serviceManager.Stop(); err != nil {
 			return fmt.Errorf("failed to stop daemon: %w", err)
 		}
-		
+
 		// Start with new configuration
 		if err := serviceManager.Start(); err != nil {
 			return fmt.Errorf("failed to start daemon with new config: %w", err)
 		}
-		
+
 		fmt.Printf("✅ Daemon restarted with new configuration\n")
 	}
 
@@ -189,7 +191,7 @@ func autoStartService(configFile string) error {
 
 	// Start the service using ServiceManager (daemon mode)
 	fmt.Println(utils.FormatInfo("🚀 Starting proxy service..."))
-	
+
 	if err := serviceManager.Start(); err != nil {
 		return fmt.Errorf("failed to start proxy server: %w", err)
 	}
@@ -197,7 +199,7 @@ func autoStartService(configFile string) error {
 	fmt.Println(utils.FormatSuccess("✅ Service started successfully!"))
 	fmt.Println(utils.FormatInfo("🌐 Proxy available at:") + " " + utils.FormatHighlight(fmt.Sprintf("http://localhost:%d", cfg.Server.Port)))
 	fmt.Println(utils.FormatInfo("📊 Active API:") + " " + utils.FormatBold(activeAPI.Name) + utils.FormatDim(" -> ") + utils.FormatDim(activeAPI.URL))
-	
+
 	return nil
 }
 
@@ -219,22 +221,22 @@ func main() {
 	if len(os.Args) >= 3 && (os.Args[1] == "-f" || os.Args[1] == "--config") && len(os.Args) == 3 {
 		// Auto-start mode: octopus -f config.toml
 		providedConfigFile := os.Args[2]
-		
+
 		configFile, configChanged, err := getConfigPath(providedConfigFile, stateManager)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Config error: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		fmt.Printf("🚀 Octopus CLI Auto-Start Mode\n")
 		fmt.Printf("Config: %s\n", configFile)
-		
+
 		// Handle config change (restart daemon if needed)
 		if err := handleConfigChange(configFile, configChanged); err != nil {
 			fmt.Fprintf(os.Stderr, "Config change error: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		if err := autoStartService(configFile); err != nil {
 			fmt.Fprintf(os.Stderr, "Auto-start failed: %v\n", err)
 			os.Exit(1)
@@ -250,10 +252,10 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Config error: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		fmt.Printf("🚀 Octopus CLI Auto-Start Mode\n")
 		fmt.Printf("Config: %s\n", configFile)
-		
+
 		if err := autoStartService(configFile); err != nil {
 			fmt.Fprintf(os.Stderr, "Auto-start failed: %v\n", err)
 			os.Exit(1)
@@ -313,6 +315,7 @@ restarting Claude Code or modifying environment variables.`,
 	rootCmd.AddCommand(newConfigCommand(&configFile, stateManager))
 	rootCmd.AddCommand(newHealthCommand(&configFile, stateManager))
 	rootCmd.AddCommand(newLogsCommand(&configFile, stateManager))
+	rootCmd.AddCommand(newUpgradeCommand(&configFile, version))
 
 	return rootCmd
 }
@@ -339,7 +342,7 @@ func newStartCommand(configFile *string, stateManager *state.Manager) *cobra.Com
 				cmd.Printf("Config error: %v\n", err)
 				return err
 			}
-			
+
 			if *configFile != "" {
 				cmd.Printf("Using config file: %s\n", cfgPath)
 			}
@@ -381,7 +384,7 @@ func newStopCommand(configFile *string, stateManager *state.Manager) *cobra.Comm
 				cmd.Printf("Config error: %v\n", err)
 				return err
 			}
-			
+
 			if *configFile != "" {
 				cmd.Printf("Using config file: %s\n", *configFile)
 			}
@@ -415,7 +418,7 @@ func newStatusCommand(configFile *string, stateManager *state.Manager) *cobra.Co
 				cmd.Printf("Config error: %v\n", err)
 				return err
 			}
-			
+
 			if *configFile != "" {
 				cmd.Printf("Using config file: %s\n", *configFile)
 			}
@@ -439,9 +442,9 @@ func newStatusCommand(configFile *string, stateManager *state.Manager) *cobra.Co
 			} else {
 				cmd.Printf("Status: Stopped\n")
 			}
-			
+
 			cmd.Printf("Port: %d\n", status.Port)
-			
+
 			if status.ActiveAPI != "" {
 				cmd.Printf("Active API: %s\n", status.ActiveAPI)
 			} else {
@@ -491,19 +494,19 @@ func newHealthCommand(configFile *string, stateManager *state.Manager) *cobra.Co
 			for _, api := range cfg.APIs {
 				// Perform actual connectivity check
 				status, latency := checkAPIHealth(api.URL, api.APIKey)
-				
+
 				// Determine if healthy based on status
 				isHealthy := status == "✅ Healthy"
-				responseTime := string(latency)
+				responseTime := latency.String()
 				if !isHealthy {
 					responseTime = "timeout"
 				}
-				
+
 				// Format and display API health
 				healthDisplay := utils.FormatAPIHealth(api.Name, isHealthy, responseTime)
 				cmd.Println(healthDisplay)
 				cmd.Println(utils.FormatDim("  URL: " + api.URL))
-				
+
 				// Show if this is the active API
 				if api.ID == cfg.Settings.ActiveAPI {
 					cmd.Println(utils.FormatHighlight("  Role: [ACTIVE]"))
@@ -518,7 +521,7 @@ func newHealthCommand(configFile *string, stateManager *state.Manager) *cobra.Co
 
 func newLogsCommand(configFile *string, stateManager *state.Manager) *cobra.Command {
 	var follow bool
-	
+
 	cmd := &cobra.Command{
 		Use:   "logs",
 		Short: "View service logs",
@@ -549,7 +552,7 @@ func newLogsCommand(configFile *string, stateManager *state.Manager) *cobra.Comm
 				// Default log file location (relative to binary)
 				logFile = "logs/octopus.log"
 			}
-			
+
 			// Convert relative paths to absolute paths based on executable directory
 			if !filepath.IsAbs(logFile) {
 				if execPath, err := os.Executable(); err == nil {
@@ -587,7 +590,7 @@ func newLogsCommand(configFile *string, stateManager *state.Manager) *cobra.Comm
 
 	// Add follow flag (no short flag to avoid conflict with -f config flag)
 	cmd.Flags().BoolVar(&follow, "follow", false, "Follow log output")
-	
+
 	return cmd
 }
 
@@ -608,7 +611,7 @@ func newConfigCommand(configFile *string, stateManager *state.Manager) *cobra.Co
 
 				cmd.Printf("Current Configuration:\n")
 				cmd.Printf("  Config File: %s\n", cfgPath)
-				
+
 				// Load configuration to show active API
 				configManager := config.NewManager(cfgPath)
 				cfg, err := configManager.LoadConfig()
@@ -622,7 +625,7 @@ func newConfigCommand(configFile *string, stateManager *state.Manager) *cobra.Co
 					}
 					cmd.Printf("  Total APIs: %d\n", len(cfg.APIs))
 				}
-				
+
 				cmd.Printf("\nUse 'octopus config --help' to see available subcommands.\n")
 				return nil
 			}
@@ -636,6 +639,7 @@ func newConfigCommand(configFile *string, stateManager *state.Manager) *cobra.Co
 	configCmd.AddCommand(newConfigRemoveCommand(configFile, stateManager))
 	configCmd.AddCommand(newConfigSwitchCommand(configFile, stateManager))
 	configCmd.AddCommand(newConfigShowCommand(configFile, stateManager))
+	configCmd.AddCommand(newConfigEditCommand(configFile, stateManager))
 
 	return configCmd
 }
@@ -662,7 +666,7 @@ func newConfigListCommand(configFile *string, stateManager *state.Manager) *cobr
 
 			// Display API configurations
 			cmd.Println(utils.FormatBold("API Configurations:"))
-			
+
 			if len(cfg.APIs) == 0 {
 				cmd.Println(utils.FormatDim("No APIs configured"))
 				return nil
@@ -671,19 +675,19 @@ func newConfigListCommand(configFile *string, stateManager *state.Manager) *cobr
 			// Prepare table data
 			headers := []string{"ID", "Name", "Status", "URL"}
 			rows := make([][]string, 0, len(cfg.APIs))
-			
+
 			for _, api := range cfg.APIs {
 				status := "inactive"
 				if api.ID == cfg.Settings.ActiveAPI {
 					status = "active"
 				}
-				
+
 				// Mask the API key for URL display
 				displayURL := api.URL
 				if len(displayURL) > 50 {
 					displayURL = displayURL[:47] + "..."
 				}
-				
+
 				rows = append(rows, []string{
 					api.ID,
 					api.Name,
@@ -691,11 +695,11 @@ func newConfigListCommand(configFile *string, stateManager *state.Manager) *cobr
 					displayURL,
 				})
 			}
-			
+
 			// Display formatted table
 			table := utils.FormatTable(headers, rows)
 			cmd.Println(table)
-			
+
 			return nil
 		},
 	}
@@ -867,7 +871,7 @@ func newConfigSwitchCommand(configFile *string, stateManager *state.Manager) *co
 			}
 
 			// Log the API switch to service log file
-			logMessage := fmt.Sprintf("API switched from '%s' to '%s' (%s -> %s)", 
+			logMessage := fmt.Sprintf("API switched from '%s' to '%s' (%s -> %s)",
 				previousAPI, name, previousAPI, targetAPI.URL)
 			if err := logToServiceFile(cfgPath, logMessage); err != nil {
 				// Don't fail the command if logging fails, just warn
@@ -884,7 +888,7 @@ func newConfigSwitchCommand(configFile *string, stateManager *state.Manager) *co
 					cmd.Printf("Warning: Failed to check service status: %v\n", err)
 				} else if status.IsRunning {
 					cmd.Printf("📝 Restarting daemon to apply new API configuration...\n")
-					
+
 					// Stop the current daemon
 					if err := serviceManager.Stop(); err != nil {
 						cmd.Printf("Warning: Failed to stop daemon: %v\n", err)
@@ -894,7 +898,7 @@ func newConfigSwitchCommand(configFile *string, stateManager *state.Manager) *co
 							cmd.Printf("Warning: Failed to start daemon with new config: %v\n", err)
 						} else {
 							cmd.Printf("✅ Daemon restarted with new API configuration\n")
-							
+
 							// Log the restart to service log file
 							restartMessage := fmt.Sprintf("Daemon restarted to apply API switch to '%s'", name)
 							if err := logToServiceFile(cfgPath, restartMessage); err != nil {
@@ -953,7 +957,7 @@ func newConfigShowCommand(configFile *string, stateManager *state.Manager) *cobr
 			cmd.Printf("API Configuration: %s\n", targetAPI.ID)
 			cmd.Printf("  Name: %s\n", targetAPI.Name)
 			cmd.Printf("  URL: %s\n", targetAPI.URL)
-			
+
 			// Mask the API key for security
 			if targetAPI.APIKey != "" {
 				maskedKey := targetAPI.APIKey
@@ -962,10 +966,10 @@ func newConfigShowCommand(configFile *string, stateManager *state.Manager) *cobr
 				}
 				cmd.Printf("  API Key: %s\n", maskedKey)
 			}
-			
+
 			cmd.Printf("  Timeout: %d seconds\n", targetAPI.Timeout)
 			cmd.Printf("  Retry Count: %d\n", targetAPI.RetryCount)
-			
+
 			// Show if this is the active API
 			if cfg.Settings.ActiveAPI == targetAPI.ID {
 				cmd.Printf("  Status: Active\n")
@@ -978,28 +982,102 @@ func newConfigShowCommand(configFile *string, stateManager *state.Manager) *cobr
 	}
 }
 
+func newConfigEditCommand(configFile *string, stateManager *state.Manager) *cobra.Command {
+	var customEditor string
+
+	cmd := &cobra.Command{
+		Use:   "edit",
+		Short: "Edit configuration file with system editor",
+		Long:  "Open the current configuration file with the system's default editor or a specified editor",
+		Example: `  octopus config edit
+  octopus config edit --editor vim
+  octopus config edit --editor code`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Get current config file path
+			cfgPath, _, err := getConfigPath(*configFile, stateManager)
+			if err != nil {
+				cmd.Printf("Config error: %v\n", err)
+				return err
+			}
+
+			// Verify config file exists
+			if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
+				cmd.Printf("Configuration file not found: %s\n", cfgPath)
+				return fmt.Errorf("configuration file not found: %s", cfgPath)
+			}
+
+			cmd.Printf("Opening configuration file: %s\n", cfgPath)
+
+			// Open file in editor
+			if err := utils.OpenFileInEditor(cfgPath, customEditor); err != nil {
+				cmd.Printf("Failed to open configuration file in editor: %v\n", err)
+				return err
+			}
+
+			// After editor closes, validate configuration
+			cmd.Printf("Configuration file closed. Validating configuration...\n")
+
+			// Load and validate the modified configuration
+			configManager := config.NewManager(cfgPath)
+			_, err = configManager.LoadConfig()
+			if err != nil {
+				cmd.Printf("⚠️  Configuration validation failed: %v\n", err)
+				cmd.Printf("Please fix the configuration errors and run 'octopus config edit' again if needed.\n")
+				return err
+			}
+
+			cmd.Printf("✅ Configuration validated successfully!\n")
+
+			// Check if service is running and suggest restart
+			serviceManager, err := NewServiceManager(cfgPath)
+			if err != nil {
+				cmd.Printf("Warning: Could not check service status: %v\n", err)
+				return nil
+			}
+
+			status, err := serviceManager.Status()
+			if err != nil {
+				cmd.Printf("Warning: Could not check service status: %v\n", err)
+				return nil
+			}
+
+			if status.IsRunning {
+				cmd.Printf("💡 Service is currently running. To apply configuration changes, run:\n")
+				cmd.Printf("   octopus stop && octopus start\n")
+			}
+
+			return nil
+		},
+	}
+
+	// Add editor flag
+	cmd.Flags().StringVar(&customEditor, "editor", "", "Specify editor to use (e.g., vim, code, nano)")
+
+	return cmd
+}
+
 // checkAPIHealth performs a health check on an API endpoint
 func checkAPIHealth(apiURL, apiKey string) (status string, latency time.Duration) {
 	startTime := time.Now()
-	
+
 	// Create a simple health check request
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	
+
 	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
 	if err != nil {
 		return "❌ Invalid URL", 0
 	}
-	
+
 	// Add API key if provided
 	if apiKey != "" {
 		req.Header.Set("Authorization", "Bearer "+apiKey)
 	}
-	
+
 	// Set proper headers for Anthropic API
 	req.Header.Set("User-Agent", "Octopus-CLI/1.0")
 	req.Header.Set("Accept", "application/json")
-	
+
 	// Create HTTP client with timeout
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -1007,15 +1085,15 @@ func checkAPIHealth(apiURL, apiKey string) (status string, latency time.Duration
 			Proxy: nil, // Disable proxy to avoid system proxy interference
 		},
 	}
-	
+
 	resp, err := client.Do(req)
 	latency = time.Since(startTime)
-	
+
 	if err != nil {
 		return "❌ Connection failed", latency
 	}
 	defer resp.Body.Close()
-	
+
 	// Check response status
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return "✅ Healthy", latency
@@ -1026,43 +1104,314 @@ func checkAPIHealth(apiURL, apiKey string) (status string, latency time.Duration
 	} else if resp.StatusCode >= 500 {
 		return "❌ Server error", latency
 	}
-	
+
 	return "⚠️ Unknown status", latency
 }
 
 // followLogFile implements tail-like functionality for log files
 func followLogFile(cmd *cobra.Command, logFile string) error {
-	file, err := os.Open(logFile)
-	if err != nil {
-		return fmt.Errorf("failed to open log file: %w", err)
+	// Set up signal handling for graceful exit
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle Ctrl+C signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		cmd.Printf("\n\nStopping log following...\n")
+		cancel()
+	}()
+
+	// First, display the last 20 lines of existing content
+	if err := displayRecentLogLines(cmd, logFile, 20); err != nil {
+		cmd.Printf("Warning: Could not display recent log lines: %v\n", err)
 	}
-	defer file.Close()
-	
-	// Seek to end of file to start following from new content
-	_, err = file.Seek(0, io.SeekEnd)
-	if err != nil {
-		return fmt.Errorf("failed to seek to end of file: %w", err)
+
+	cmd.Printf("\n--- Following logs (Press Ctrl+C to exit) ---\n")
+
+	// Use a file watcher approach with stat checking
+	var lastSize int64 = -1
+	var lastModTime time.Time
+
+	// Get initial file info
+	if info, err := os.Stat(logFile); err == nil {
+		lastSize = info.Size()
+		lastModTime = info.ModTime()
 	}
-	
-	cmd.Printf("Following logs (Press Ctrl+C to exit)...\n\n")
-	
-	reader := bufio.NewReader(file)
-	
+
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
 	for {
-		line, isPrefix, err := reader.ReadLine()
-		if err != nil {
-			if err == io.EOF {
-				// No more content, wait and retry
-				time.Sleep(100 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+			// Check if file has been modified
+			info, err := os.Stat(logFile)
+			if err != nil {
+				// File might have been removed or rotated, wait for it to reappear
+				lastSize = -1
 				continue
 			}
-			return fmt.Errorf("error reading log file: %w", err)
-		}
-		
-		// Print new line (handle partial lines)
-		cmd.Printf("%s", string(line))
-		if !isPrefix {
-			cmd.Printf("\n")
+
+			currentSize := info.Size()
+			currentModTime := info.ModTime()
+
+			// Check if file has new content
+			if currentSize > lastSize || currentModTime.After(lastModTime) {
+				if err := readNewContent(cmd, logFile, lastSize, currentSize); err != nil {
+					cmd.Printf("Error reading new content: %v\n", err)
+				}
+				lastSize = currentSize
+				lastModTime = currentModTime
+			} else if currentSize < lastSize {
+				// File was truncated or rotated
+				cmd.Printf("\n--- Log file was rotated ---\n")
+				lastSize = 0
+				// Read from beginning
+				if err := readNewContent(cmd, logFile, 0, currentSize); err != nil {
+					cmd.Printf("Error reading rotated content: %v\n", err)
+				}
+				lastSize = currentSize
+				lastModTime = currentModTime
+			}
 		}
 	}
+}
+
+// displayRecentLogLines shows the last N lines from the log file
+func displayRecentLogLines(cmd *cobra.Command, logFile string, maxLines int) error {
+	file, err := os.Open(logFile)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Read file content and get last N lines
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return err
+	}
+
+	if len(content) == 0 {
+		cmd.Printf("Log file is empty\n")
+		return nil
+	}
+
+	lines := strings.Split(strings.TrimRight(string(content), "\n"), "\n")
+	startIdx := len(lines) - maxLines
+	if startIdx < 0 {
+		startIdx = 0
+	}
+
+	cmd.Printf("--- Last %d lines of log ---\n", len(lines)-startIdx)
+	for i := startIdx; i < len(lines); i++ {
+		cmd.Printf("%s\n", lines[i])
+	}
+
+	return nil
+}
+
+// readNewContent reads new content from the file starting at offset
+func readNewContent(cmd *cobra.Command, logFile string, startOffset, endOffset int64) error {
+	if startOffset >= endOffset {
+		return nil
+	}
+
+	file, err := os.Open(logFile)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Seek to the start offset
+	if startOffset > 0 {
+		_, err = file.Seek(startOffset, io.SeekStart)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Read only the new content
+	buffer := make([]byte, endOffset-startOffset)
+	n, err := io.ReadFull(file, buffer)
+	if err != nil && err != io.ErrUnexpectedEOF && err != io.EOF {
+		return err
+	}
+
+	// Output new content, ensuring proper line handling
+	content := string(buffer[:n])
+	if content != "" {
+		// Remove trailing newline to avoid double newlines
+		content = strings.TrimRight(content, "\n")
+		if content != "" {
+			cmd.Printf("%s\n", content)
+		}
+	}
+
+	return nil
+}
+
+func newUpgradeCommand(configFile *string, version string) *cobra.Command {
+	var checkOnly bool
+	var force bool
+
+	cmd := &cobra.Command{
+		Use:   "upgrade",
+		Short: "Upgrade to the latest version",
+		Long:  "Check for the latest version of Octopus CLI and upgrade to it",
+		Example: `  octopus upgrade
+  octopus upgrade --check
+  octopus upgrade --force`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Create version checker
+			versionChecker := utils.NewVersionChecker("VibeAny/octopus-cli", version)
+
+			cmd.Printf("🔍 Checking for upgrades...\n")
+
+			// Check if upgrade is available
+			isAvailable, latestRelease, err := versionChecker.IsUpdateAvailable()
+			if err != nil {
+				cmd.Printf("❌ Failed to check for upgrades: %v\n", err)
+				return err
+			}
+
+			if !isAvailable {
+				cmd.Printf("✅ You are using the latest version (%s)\n", utils.FormatHighlight(version))
+				return nil
+			}
+
+			// Display upgrade information
+			upgradeInfo := utils.FormatUpdateInfo(version, latestRelease.TagName, latestRelease)
+			// Update the text to use "upgrade"
+			upgradeInfo = strings.Replace(upgradeInfo, "octopus update", "octopus upgrade", -1)
+			cmd.Printf("%s\n", upgradeInfo)
+
+			// If check-only mode, just return
+			if checkOnly {
+				return nil
+			}
+
+			// Ask for confirmation unless forced
+			if !force {
+				cmd.Printf("\nDo you want to upgrade now? [y/N]: ")
+
+				var response string
+				_, _ = fmt.Scanln(&response)
+
+				response = strings.ToLower(strings.TrimSpace(response))
+				if response != "y" && response != "yes" {
+					cmd.Printf("Upgrade cancelled.\n")
+					return nil
+				}
+			}
+
+			// Proceed with upgrade
+			cmd.Printf("\n🚀 Starting upgrade process...\n")
+
+			// Create update manager
+			updateManager := utils.NewUpdateManager("VibeAny/octopus-cli", version)
+			defer updateManager.Cleanup()
+
+			// Get current platform
+			platform := utils.GetCurrentPlatform()
+			cmd.Printf("📋 Platform: %s-%s\n", platform.OS, platform.Arch)
+
+			// Find asset for current platform
+			asset, err := updateManager.FindAssetForPlatform(latestRelease, platform)
+			if err != nil {
+				cmd.Printf("❌ Failed to find upgrade for your platform: %v\n", err)
+				return err
+			}
+
+			cmd.Printf("📦 Found upgrade: %s (%.1f MB)\n", asset.Name, float64(asset.Size)/1024/1024)
+
+			// Create backup of current binary
+			cmd.Printf("💾 Creating backup of current version...\n")
+			backupPath, err := updateManager.BackupCurrentBinary()
+			if err != nil {
+				cmd.Printf("❌ Failed to create backup: %v\n", err)
+				return err
+			}
+
+			// Progress callback
+			var lastPercent int
+			progressCallback := func(progress utils.DownloadProgress) {
+				percent := int(progress.Percentage)
+				if percent > lastPercent && percent%10 == 0 {
+					cmd.Printf("⬇️  Downloaded: %.1f%% (%s) - %s\n",
+						progress.Percentage,
+						formatBytes(progress.Downloaded),
+						progress.Speed)
+					lastPercent = percent
+				}
+			}
+
+			// Download upgrade
+			cmd.Printf("⬇️  Downloading upgrade...\n")
+			downloadPath, err := updateManager.DownloadUpdate(asset, progressCallback)
+			if err != nil {
+				cmd.Printf("❌ Failed to download upgrade: %v\n", err)
+				return err
+			}
+
+			// Verify download
+			cmd.Printf("🔍 Verifying download...\n")
+			if err := updateManager.VerifyDownload(downloadPath, asset.Size); err != nil {
+				cmd.Printf("❌ Download verification failed: %v\n", err)
+				return err
+			}
+
+			// Install upgrade
+			cmd.Printf("🔄 Installing upgrade...\n")
+			if err := updateManager.InstallUpdate(downloadPath); err != nil {
+				cmd.Printf("❌ Failed to install upgrade: %v\n", err)
+
+				// Try to restore from backup
+				cmd.Printf("🔄 Attempting to restore from backup...\n")
+				if restoreErr := updateManager.RestoreFromBackup(backupPath); restoreErr != nil {
+					cmd.Printf("❌ Failed to restore from backup: %v\n", restoreErr)
+					cmd.Printf("⚠️  Please restore manually from: %s\n", backupPath)
+				} else {
+					cmd.Printf("✅ Restored from backup successfully\n")
+				}
+
+				return err
+			}
+
+			// Clean up backup (keep it commented for safety)
+			// os.Remove(backupPath)
+
+			cmd.Printf("✅ Upgrade completed successfully!\n")
+			cmd.Printf("🎉 Octopus CLI has been upgraded to %s\n", utils.FormatHighlight(latestRelease.TagName))
+			cmd.Printf("💡 Restart your terminal or run 'octopus version' to verify the upgrade.\n")
+
+			return nil
+		},
+	}
+
+	// Add flags
+	cmd.Flags().BoolVar(&checkOnly, "check", false, "Only check for upgrades, don't install")
+	cmd.Flags().BoolVar(&force, "force", false, "Install upgrade without confirmation")
+
+	return cmd
+}
+
+// formatBytes formats bytes as human readable string (helper for CLI use)
+func formatBytes(bytes int64) string {
+	units := []string{"B", "KB", "MB", "GB", "TB"}
+
+	if bytes < 1024 {
+		return fmt.Sprintf("%d B", bytes)
+	}
+
+	div, exp := int64(1024), 0
+	for n := bytes / 1024; n >= 1024; n /= 1024 {
+		div *= 1024
+		exp++
+	}
+
+	return fmt.Sprintf("%.1f %s", float64(bytes)/float64(div), units[exp+1])
 }

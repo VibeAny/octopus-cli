@@ -94,7 +94,7 @@ func (cm *ConfigManager) RemoveAPI(apiID string) error {
 	// Find and remove the API
 	found := false
 	newAPIs := make([]config.APIConfig, 0, len(cm.config.APIs))
-	
+
 	for _, api := range cm.config.APIs {
 		if api.ID == apiID {
 			found = true
@@ -156,10 +156,10 @@ func (cm *ConfigManager) GetConfig() *config.Config {
 
 	// Create a deep copy of the configuration
 	configCopy := *cm.config
-	
+
 	// Copy the APIs slice
 	configCopy.APIs = make([]config.APIConfig, len(cm.config.APIs))
 	copy(configCopy.APIs, cm.config.APIs)
-	
+
 	return &configCopy
 }

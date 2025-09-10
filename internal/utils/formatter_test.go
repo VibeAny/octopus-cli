@@ -20,10 +20,10 @@ func TestMain(m *testing.M) {
 func TestFormatSuccess_ShouldReturnGreenText(t *testing.T) {
 	// Arrange
 	message := "Operation completed successfully"
-	
+
 	// Act
 	result := FormatSuccess(message)
-	
+
 	// Assert
 	assert.Contains(t, result, message)
 	// Should contain ANSI color codes for green
@@ -33,10 +33,10 @@ func TestFormatSuccess_ShouldReturnGreenText(t *testing.T) {
 func TestFormatError_ShouldReturnRedText(t *testing.T) {
 	// Arrange
 	message := "Error occurred"
-	
+
 	// Act
 	result := FormatError(message)
-	
+
 	// Assert
 	assert.Contains(t, result, message)
 	// Should contain ANSI color codes for red
@@ -46,10 +46,10 @@ func TestFormatError_ShouldReturnRedText(t *testing.T) {
 func TestFormatWarning_ShouldReturnYellowText(t *testing.T) {
 	// Arrange
 	message := "Warning message"
-	
+
 	// Act
 	result := FormatWarning(message)
-	
+
 	// Assert
 	assert.Contains(t, result, message)
 	// Should contain ANSI color codes for yellow
@@ -59,10 +59,10 @@ func TestFormatWarning_ShouldReturnYellowText(t *testing.T) {
 func TestFormatInfo_ShouldReturnBlueText(t *testing.T) {
 	// Arrange
 	message := "Information message"
-	
+
 	// Act
 	result := FormatInfo(message)
-	
+
 	// Assert
 	assert.Contains(t, result, message)
 	// Should contain ANSI color codes for blue
@@ -72,10 +72,10 @@ func TestFormatInfo_ShouldReturnBlueText(t *testing.T) {
 func TestFormatHighlight_ShouldReturnCyanText(t *testing.T) {
 	// Arrange
 	message := "Highlighted text"
-	
+
 	// Act
 	result := FormatHighlight(message)
-	
+
 	// Assert
 	assert.Contains(t, result, message)
 	// Should contain ANSI color codes for cyan
@@ -85,10 +85,10 @@ func TestFormatHighlight_ShouldReturnCyanText(t *testing.T) {
 func TestFormatBold_ShouldReturnBoldText(t *testing.T) {
 	// Arrange
 	message := "Bold text"
-	
+
 	// Act
 	result := FormatBold(message)
-	
+
 	// Assert
 	assert.Contains(t, result, message)
 	// Should contain ANSI code for bold
@@ -98,10 +98,10 @@ func TestFormatBold_ShouldReturnBoldText(t *testing.T) {
 func TestFormatDim_ShouldReturnDimText(t *testing.T) {
 	// Arrange
 	message := "Dim text"
-	
+
 	// Act
 	result := FormatDim(message)
-	
+
 	// Assert
 	assert.Contains(t, result, message)
 	// Should contain ANSI code for dim
@@ -115,10 +115,10 @@ func TestFormatTable_ShouldReturnFormattedTable(t *testing.T) {
 		{"API 1", "Active", "https://api1.com"},
 		{"API 2", "Inactive", "https://api2.com"},
 	}
-	
+
 	// Act
 	result := FormatTable(headers, rows)
-	
+
 	// Assert
 	assert.Contains(t, result, "Name")
 	assert.Contains(t, result, "Status")
@@ -132,7 +132,7 @@ func TestFormatTable_ShouldReturnFormattedTable(t *testing.T) {
 func TestFormatStatus_WithRunningStatus_ShouldReturnGreenRunning(t *testing.T) {
 	// Act
 	result := FormatStatus("running")
-	
+
 	// Assert
 	assert.Contains(t, result, "running")
 	assert.Contains(t, result, "\x1b[32m") // Green for running
@@ -141,7 +141,7 @@ func TestFormatStatus_WithRunningStatus_ShouldReturnGreenRunning(t *testing.T) {
 func TestFormatStatus_WithStoppedStatus_ShouldReturnRedStopped(t *testing.T) {
 	// Act
 	result := FormatStatus("stopped")
-	
+
 	// Assert
 	assert.Contains(t, result, "stopped")
 	assert.Contains(t, result, "\x1b[31m") // Red for stopped
@@ -150,7 +150,7 @@ func TestFormatStatus_WithStoppedStatus_ShouldReturnRedStopped(t *testing.T) {
 func TestFormatStatus_WithUnknownStatus_ShouldReturnYellowUnknown(t *testing.T) {
 	// Act
 	result := FormatStatus("unknown")
-	
+
 	// Assert
 	assert.Contains(t, result, "unknown")
 	assert.Contains(t, result, "\x1b[33m") // Yellow for unknown
@@ -161,14 +161,14 @@ func TestFormatAPIHealth_WithHealthyStatus_ShouldReturnGreenCheck(t *testing.T) 
 	apiName := "Test API"
 	isHealthy := true
 	responseTime := "123ms"
-	
+
 	// Act
 	result := FormatAPIHealth(apiName, isHealthy, responseTime)
-	
+
 	// Assert
 	assert.Contains(t, result, apiName)
 	assert.Contains(t, result, responseTime)
-	assert.Contains(t, result, "✓") // Check mark
+	assert.Contains(t, result, "✓")        // Check mark
 	assert.Contains(t, result, "\x1b[32m") // Green color
 }
 
@@ -177,14 +177,14 @@ func TestFormatAPIHealth_WithUnhealthyStatus_ShouldReturnRedCross(t *testing.T) 
 	apiName := "Test API"
 	isHealthy := false
 	responseTime := "timeout"
-	
+
 	// Act
 	result := FormatAPIHealth(apiName, isHealthy, responseTime)
-	
+
 	// Assert
 	assert.Contains(t, result, apiName)
 	assert.Contains(t, result, responseTime)
-	assert.Contains(t, result, "✗") // Cross mark
+	assert.Contains(t, result, "✗")        // Cross mark
 	assert.Contains(t, result, "\x1b[31m") // Red color
 }
 
@@ -192,14 +192,14 @@ func TestDisableColor_ShouldReturnPlainText(t *testing.T) {
 	// Arrange
 	message := "Test message"
 	DisableColor()
-	
+
 	// Act
 	result := FormatSuccess(message)
-	
+
 	// Assert
 	assert.Equal(t, message, result)
 	assert.NotContains(t, result, "\x1b[") // No ANSI codes
-	
+
 	// Cleanup - re-enable color for other tests
 	EnableColor()
 }
@@ -209,10 +209,10 @@ func TestEnableColor_ShouldReturnColoredText(t *testing.T) {
 	message := "Test message"
 	DisableColor()
 	EnableColor()
-	
+
 	// Act
 	result := FormatSuccess(message)
-	
+
 	// Assert
 	assert.Contains(t, result, message)
 	assert.Contains(t, result, "\x1b[32m") // Green color code
@@ -221,10 +221,10 @@ func TestEnableColor_ShouldReturnColoredText(t *testing.T) {
 func TestStripANSI_ShouldRemoveColorCodes(t *testing.T) {
 	// Arrange
 	coloredText := "\x1b[32mGreen text\x1b[0m"
-	
+
 	// Act
 	result := stripANSI(coloredText)
-	
+
 	// Assert
 	assert.Equal(t, "Green text", result)
 }
@@ -233,11 +233,11 @@ func TestVisualLen_ShouldReturnCorrectLength(t *testing.T) {
 	// Arrange
 	plainText := "Hello World"
 	coloredText := "\x1b[32mHello World\x1b[0m"
-	
+
 	// Act
 	plainLength := visualLen(plainText)
 	coloredLength := visualLen(coloredText)
-	
+
 	// Assert
 	assert.Equal(t, 11, plainLength)
 	assert.Equal(t, 11, coloredLength) // Should be same as plain text
@@ -250,10 +250,10 @@ func TestFormatTable_WithColoredStatus_ShouldAlignCorrectly(t *testing.T) {
 		{"API 1", FormatSuccess("active")},
 		{"API 2", FormatError("inactive")},
 	}
-	
+
 	// Act
 	result := FormatTable(headers, rows)
-	
+
 	// Assert
 	assert.Contains(t, result, "Name")
 	assert.Contains(t, result, "Status")

@@ -42,7 +42,7 @@ func TestForwardEngine_ForwardRequest_WithValidTarget_ShouldSucceed(t *testing.T
 		// Verify request headers
 		assert.Equal(t, "Bearer test-key", r.Header.Get("Authorization"))
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"message": "success"}`))
@@ -201,15 +201,15 @@ func TestForwardEngine_ShouldRetry_WithRetryableStatusCodes_ShouldReturnTrue(t *
 
 	retryableCodes := []int{
 		http.StatusInternalServerError, // 500
-		http.StatusBadGateway,         // 502
-		http.StatusServiceUnavailable, // 503
-		http.StatusGatewayTimeout,     // 504
+		http.StatusBadGateway,          // 502
+		http.StatusServiceUnavailable,  // 503
+		http.StatusGatewayTimeout,      // 504
 	}
 
 	for _, code := range retryableCodes {
 		t.Run(string(rune(code)), func(t *testing.T) {
 			// Act & Assert
-			assert.True(t, engine.shouldRetry(code, nil), 
+			assert.True(t, engine.shouldRetry(code, nil),
 				"Status code %d should be retryable", code)
 		})
 	}
@@ -221,12 +221,12 @@ func TestForwardEngine_ShouldRetry_WithNonRetryableStatusCodes_ShouldReturnFalse
 	engine := NewForwardEngine(apiConfig)
 
 	nonRetryableCodes := []int{
-		http.StatusOK,                  // 200
-		http.StatusBadRequest,          // 400
-		http.StatusUnauthorized,        // 401
-		http.StatusForbidden,           // 403
-		http.StatusNotFound,            // 404
-		http.StatusMethodNotAllowed,    // 405
+		http.StatusOK,               // 200
+		http.StatusBadRequest,       // 400
+		http.StatusUnauthorized,     // 401
+		http.StatusForbidden,        // 403
+		http.StatusNotFound,         // 404
+		http.StatusMethodNotAllowed, // 405
 	}
 
 	for _, code := range nonRetryableCodes {
@@ -292,7 +292,7 @@ func TestForwardEngine_ForwardRequest_WithCustomHeaders_ShouldPreserveHeaders(t 
 	// Assert
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	
+
 	// Verify headers were preserved
 	assert.Equal(t, "Bearer test-key", receivedHeaders.Get("Authorization"))
 	assert.Equal(t, "custom-value", receivedHeaders.Get("X-Custom-Header"))

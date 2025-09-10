@@ -60,10 +60,10 @@ func TestNewLogger_RelativePath_ShouldConvertToAbsolute(t *testing.T) {
 	tempDir := t.TempDir()
 	originalWd, _ := os.Getwd()
 	defer os.Chdir(originalWd)
-	
+
 	// Change to temp directory to test relative path resolution
 	os.Chdir(tempDir)
-	
+
 	relativeLogFile := "logs/app.log"
 
 	// Act
@@ -72,7 +72,7 @@ func TestNewLogger_RelativePath_ShouldConvertToAbsolute(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	assert.NotNil(t, logger)
-	
+
 	// The actual path should be based on executable directory, not working directory
 	// In test environment, this will be resolved relative to the test binary location
 	assert.True(t, filepath.IsAbs(logger.filePath), "Logger should store absolute path")
@@ -84,7 +84,7 @@ func TestLogger_Info_ShouldWriteInfoMessage(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "info.log")
-	
+
 	logger, err := NewLogger(logFile)
 	require.NoError(t, err)
 
@@ -94,7 +94,7 @@ func TestLogger_Info_ShouldWriteInfoMessage(t *testing.T) {
 	// Assert
 	content, err := os.ReadFile(logFile)
 	require.NoError(t, err)
-	
+
 	logContent := string(content)
 	assert.Contains(t, logContent, "[INFO]")
 	assert.Contains(t, logContent, "Test info message with parameter")
@@ -105,7 +105,7 @@ func TestLogger_Error_ShouldWriteErrorMessage(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "error.log")
-	
+
 	logger, err := NewLogger(logFile)
 	require.NoError(t, err)
 
@@ -115,7 +115,7 @@ func TestLogger_Error_ShouldWriteErrorMessage(t *testing.T) {
 	// Assert
 	content, err := os.ReadFile(logFile)
 	require.NoError(t, err)
-	
+
 	logContent := string(content)
 	assert.Contains(t, logContent, "[ERROR]")
 	assert.Contains(t, logContent, "Test error message: error details")
@@ -126,7 +126,7 @@ func TestLogger_Warn_ShouldWriteWarnMessage(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "warn.log")
-	
+
 	logger, err := NewLogger(logFile)
 	require.NoError(t, err)
 
@@ -136,7 +136,7 @@ func TestLogger_Warn_ShouldWriteWarnMessage(t *testing.T) {
 	// Assert
 	content, err := os.ReadFile(logFile)
 	require.NoError(t, err)
-	
+
 	logContent := string(content)
 	assert.Contains(t, logContent, "[WARN]")
 	assert.Contains(t, logContent, "Test warning message")
@@ -147,7 +147,7 @@ func TestLogger_Debug_ShouldWriteDebugMessage(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "debug.log")
-	
+
 	logger, err := NewLogger(logFile)
 	require.NoError(t, err)
 
@@ -157,7 +157,7 @@ func TestLogger_Debug_ShouldWriteDebugMessage(t *testing.T) {
 	// Assert
 	content, err := os.ReadFile(logFile)
 	require.NoError(t, err)
-	
+
 	logContent := string(content)
 	assert.Contains(t, logContent, "[DEBUG]")
 	assert.Contains(t, logContent, "Debug info: 42")
@@ -168,7 +168,7 @@ func TestLogger_MultipleMessages_ShouldAppend(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "multi.log")
-	
+
 	logger, err := NewLogger(logFile)
 	require.NoError(t, err)
 
@@ -180,10 +180,10 @@ func TestLogger_MultipleMessages_ShouldAppend(t *testing.T) {
 	// Assert
 	content, err := os.ReadFile(logFile)
 	require.NoError(t, err)
-	
+
 	logContent := string(content)
 	lines := strings.Split(strings.TrimSpace(logContent), "\n")
-	
+
 	assert.Len(t, lines, 3, "Should have 3 log lines")
 	assert.Contains(t, lines[0], "[INFO] First message")
 	assert.Contains(t, lines[1], "[ERROR] Second message")
@@ -195,7 +195,7 @@ func TestLogger_Close_ShouldNotError(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "close.log")
-	
+
 	logger, err := NewLogger(logFile)
 	require.NoError(t, err)
 
@@ -211,7 +211,7 @@ func TestLogger_TimestampFormat_ShouldIncludeTimestamp(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "timestamp.log")
-	
+
 	logger, err := NewLogger(logFile)
 	require.NoError(t, err)
 
@@ -221,9 +221,9 @@ func TestLogger_TimestampFormat_ShouldIncludeTimestamp(t *testing.T) {
 	// Assert
 	content, err := os.ReadFile(logFile)
 	require.NoError(t, err)
-	
+
 	logContent := string(content)
-	
+
 	// Should contain timestamp pattern (YYYY/MM/DD HH:MM:SS)
 	assert.Regexp(t, `\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}`, logContent, "Log should contain timestamp")
 	assert.Contains(t, logContent, "[INFO] Timestamp test")

@@ -18,11 +18,13 @@ Octopus CLI is a powerful command-line tool that solves the pain point of freque
 - 🔀 **Dynamic API Switching** - Switch between API providers instantly without restarts
 - 📄 **TOML Configuration** - Clean, readable configuration format
 - 💻 **CLI Interface** - Intuitive command-line operations with colorized output
+- 📝 **Config Editor** - Edit configuration files with your system's default editor
 - 🔄 **Local Proxy** - Transparent HTTP proxy for Claude Code
 - 🏥 **Health Checking** - Monitor API endpoint availability
-- 📊 **Request Logging** - Track and monitor API usage
+- 📊 **Request Logging** - Track and monitor API usage with real-time log following
 - 🔒 **Secure** - API keys stored securely with proper permissions
 - 🎨 **Beautiful UI** - Colorized tables and status indicators with proper alignment
+- 🚀 **Auto Upgrade** - Seamless upgrade system with GitHub Releases integration
 - 🌍 **Multi-Platform** - Native binaries for Windows, macOS, Linux (all architectures)
 
 ## Quick Start
@@ -69,21 +71,86 @@ make build-all      # Build for all platforms
 ### Basic Usage
 
 ```bash
-# Add API configurations
+# 1. Add API configurations
 octopus config add official https://api.anthropic.com sk-ant-xxx
 octopus config add proxy1 https://api.proxy1.com pk-xxx
 
-# Start the proxy service
+# 2. Start the proxy service
 octopus start
 
-# Configure Claude Code to use http://localhost:8080
-# Now you can switch APIs dynamically:
+# 3. Configure Claude Code environment variables
+export ANTHROPIC_BASE_URL="http://localhost:8080"
+export ANTHROPIC_API_KEY="dummy-key-will-be-overridden"
+
+# 4. Now you can switch APIs dynamically:
 octopus config switch proxy1
 octopus config switch official
 
-# Check status
+# 5. Check status and health
 octopus status
 octopus health
+
+# 6. Keep your installation up to date:
+octopus upgrade --check    # Check for updates
+octopus upgrade           # Upgrade to latest version
+```
+
+### Claude Code Configuration
+
+After installing Octopus CLI, you need to configure Claude Code to use the local proxy:
+
+#### Method 1: Environment Variables (Recommended)
+
+**Linux/macOS:**
+```bash
+# Add to your ~/.bashrc, ~/.zshrc, or ~/.profile
+export ANTHROPIC_BASE_URL="http://localhost:8080"
+export ANTHROPIC_API_KEY="dummy-key"  # Will be overridden by Octopus
+
+# Reload your shell or run:
+source ~/.bashrc  # or ~/.zshrc
+```
+
+**Windows PowerShell:**
+```powershell
+# Add to your PowerShell profile
+[Environment]::SetEnvironmentVariable("ANTHROPIC_BASE_URL", "http://localhost:8080", "User")
+[Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY", "dummy-key", "User")
+
+# Or set for current session only:
+$env:ANTHROPIC_BASE_URL = "http://localhost:8080"
+$env:ANTHROPIC_API_KEY = "dummy-key"
+```
+
+**Windows Command Prompt:**
+```cmd
+# Set permanently
+setx ANTHROPIC_BASE_URL "http://localhost:8080"
+setx ANTHROPIC_API_KEY "dummy-key"
+
+# Or set for current session only:
+set ANTHROPIC_BASE_URL=http://localhost:8080
+set ANTHROPIC_API_KEY=dummy-key
+```
+
+#### Method 2: Claude Code Settings
+
+Configure Claude Code through its settings interface to use the local proxy endpoint `http://localhost:8080`. The exact method depends on your Claude Code version and interface.
+
+Consult Claude Code's documentation for the specific configuration method for your version.
+
+#### Verification
+
+To verify the configuration is working:
+
+```bash
+# Start Octopus CLI
+octopus start
+
+# Check that Claude Code is using the proxy
+octopus logs -f
+
+# You should see requests from Claude Code in the logs
 ```
 
 ## Commands
@@ -102,16 +169,28 @@ octopus health
 - `octopus config switch <name>` - Switch to specific API configuration
 - `octopus config show <name>` - Show configuration details
 - `octopus config remove <name>` - Remove API configuration
+- `octopus config edit` - Edit configuration file with system editor
 
 ### Monitoring & Diagnostics
 
 - `octopus health` - Check API endpoints health status
 - `octopus logs` - View service logs
+- `octopus logs -f` - Follow service logs in real-time
 - `octopus version` - Show version information
+
+### Software Management
+
+- `octopus upgrade` - Upgrade to the latest version
+- `octopus upgrade --check` - Check for available upgrades without installing
+- `octopus upgrade --force` - Force upgrade without confirmation
 
 ## Configuration
 
-Octopus CLI uses TOML configuration files. The default location is `~/.config/octopus/octopus.toml`.
+Octopus CLI uses TOML configuration files. The default configuration file locations are:
+
+- **Linux**: `~/.octopus/octopus.toml`
+- **macOS**: `~/Library/Application Support/Octopus/octopus.toml`
+- **Windows**: `%APPDATA%\Octopus\octopus.toml`
 
 Example configuration:
 

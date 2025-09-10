@@ -139,7 +139,7 @@ func TestConfigManager_AddAPI_WithNewAPI_ShouldAddSuccessfully(t *testing.T) {
 	require.NoError(t, err)
 	apis := manager.GetAllAPIs()
 	assert.Len(t, apis, 2)
-	
+
 	// Verify the new API was added
 	found := false
 	for _, api := range apis {
@@ -178,7 +178,7 @@ func TestConfigManager_AddAPI_WithDuplicateID_ShouldReturnError(t *testing.T) {
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "already exists")
-	
+
 	// Verify original API unchanged
 	apis := manager.GetAllAPIs()
 	assert.Len(t, apis, 1)
@@ -225,7 +225,7 @@ func TestConfigManager_RemoveAPI_WithActiveAPI_ShouldClearActiveAPI(t *testing.T
 	// Assert
 	require.NoError(t, err)
 	assert.Equal(t, "", manager.GetActiveAPIID()) // Active API should be cleared
-	
+
 	apis := manager.GetAllAPIs()
 	assert.Len(t, apis, 1)
 	assert.Equal(t, "api2", apis[0].ID)
@@ -248,7 +248,7 @@ func TestConfigManager_RemoveAPI_WithNonExistentAPI_ShouldReturnError(t *testing
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not found")
-	
+
 	// Verify nothing changed
 	apis := manager.GetAllAPIs()
 	assert.Len(t, apis, 1)
@@ -274,13 +274,13 @@ func TestConfigManager_ConcurrentAccess_ShouldBeSafe(t *testing.T) {
 	for i := 0; i < numGoroutines; i++ {
 		go func(i int) {
 			defer wg.Done()
-			
+
 			if i%2 == 0 {
 				manager.SwitchAPI("api2")
 			} else {
 				manager.SwitchAPI("api1")
 			}
-			
+
 			// Read operations
 			manager.GetActiveAPI()
 			manager.GetAllAPIs()
@@ -320,10 +320,10 @@ func TestConfigManager_ReloadConfig_ShouldUpdateConfiguration(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	assert.Equal(t, "api3", manager.GetActiveAPIID())
-	
+
 	apis := manager.GetAllAPIs()
 	assert.Len(t, apis, 2)
-	
+
 	// Verify updated API
 	for _, api := range apis {
 		if api.ID == "api1" {
@@ -370,7 +370,7 @@ func TestServerWithConfigManager_DynamicSwitch_ShouldForwardToNewAPI(t *testing.
 	resp1, err := http.Get(proxyURL)
 	require.NoError(t, err)
 	resp1.Body.Close()
-	
+
 	assert.True(t, server1Called, "First request should go to server1")
 	assert.False(t, server2Called, "First request should not go to server2")
 

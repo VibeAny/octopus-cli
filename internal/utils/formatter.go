@@ -84,7 +84,7 @@ func FormatStatus(status string) string {
 // FormatAPIHealth formats API health status with icons and colors
 func FormatAPIHealth(apiName string, isHealthy bool, responseTime string) string {
 	var icon, status string
-	
+
 	if isHealthy {
 		icon = FormatSuccess("✓")
 		status = FormatSuccess("healthy")
@@ -92,11 +92,11 @@ func FormatAPIHealth(apiName string, isHealthy bool, responseTime string) string
 		icon = FormatError("✗")
 		status = FormatError("unhealthy")
 	}
-	
-	return fmt.Sprintf("%s %s (%s) - %s", 
-		icon, 
-		FormatBold(apiName), 
-		status, 
+
+	return fmt.Sprintf("%s %s (%s) - %s",
+		icon,
+		FormatBold(apiName),
+		status,
 		FormatDim(responseTime))
 }
 
@@ -105,13 +105,13 @@ func FormatTable(headers []string, rows [][]string) string {
 	if len(headers) == 0 || len(rows) == 0 {
 		return ""
 	}
-	
+
 	// Calculate column widths using visual length (excluding ANSI codes)
 	colWidths := make([]int, len(headers))
 	for i, header := range headers {
 		colWidths[i] = visualLen(header)
 	}
-	
+
 	for _, row := range rows {
 		for i, cell := range row {
 			if i < len(colWidths) && visualLen(cell) > colWidths[i] {
@@ -119,9 +119,9 @@ func FormatTable(headers []string, rows [][]string) string {
 			}
 		}
 	}
-	
+
 	var result strings.Builder
-	
+
 	// Top border
 	result.WriteString("┌")
 	for i, width := range colWidths {
@@ -131,7 +131,7 @@ func FormatTable(headers []string, rows [][]string) string {
 		}
 	}
 	result.WriteString("┐\n")
-	
+
 	// Headers
 	result.WriteString("│")
 	for i, header := range headers {
@@ -143,7 +143,7 @@ func FormatTable(headers []string, rows [][]string) string {
 		result.WriteString(" │")
 	}
 	result.WriteString("\n")
-	
+
 	// Header separator
 	result.WriteString("├")
 	for i, width := range colWidths {
@@ -153,7 +153,7 @@ func FormatTable(headers []string, rows [][]string) string {
 		}
 	}
 	result.WriteString("┤\n")
-	
+
 	// Rows
 	for _, row := range rows {
 		result.WriteString("│")
@@ -169,7 +169,7 @@ func FormatTable(headers []string, rows [][]string) string {
 		}
 		result.WriteString("\n")
 	}
-	
+
 	// Bottom border
 	result.WriteString("└")
 	for i, width := range colWidths {
@@ -179,7 +179,7 @@ func FormatTable(headers []string, rows [][]string) string {
 		}
 	}
 	result.WriteString("┘")
-	
+
 	return result.String()
 }
 

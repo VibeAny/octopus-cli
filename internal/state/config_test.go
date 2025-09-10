@@ -15,7 +15,7 @@ func TestEnsureDefaultConfig_NoExistingConfig_ShouldCreateDefault(t *testing.T) 
 	originalWd, _ := os.Getwd()
 	tempDir := t.TempDir()
 	defer os.Chdir(originalWd)
-	
+
 	// Change to temp directory so configs/default.toml gets created there
 	os.Chdir(tempDir)
 
@@ -25,12 +25,12 @@ func TestEnsureDefaultConfig_NoExistingConfig_ShouldCreateDefault(t *testing.T) 
 	// Assert
 	require.NoError(t, err)
 	assert.Equal(t, filepath.Join("configs", "default.toml"), configPath)
-	
+
 	// Verify file was created
 	fullPath := filepath.Join(tempDir, "configs", "default.toml")
 	_, err = os.Stat(fullPath)
 	assert.NoError(t, err, "Default config file should be created")
-	
+
 	// Verify directory was created
 	configsDir := filepath.Join(tempDir, "configs")
 	info, err := os.Stat(configsDir)
@@ -44,13 +44,13 @@ func TestEnsureDefaultConfig_ExistingConfig_ShouldReturnExisting(t *testing.T) {
 	originalWd, _ := os.Getwd()
 	tempDir := t.TempDir()
 	defer os.Chdir(originalWd)
-	
+
 	os.Chdir(tempDir)
-	
+
 	// Create configs directory and default.toml
 	configsDir := filepath.Join(tempDir, "configs")
 	os.MkdirAll(configsDir, 0755)
-	
+
 	existingConfig := `[server]
 port = 9999
 `
@@ -63,7 +63,7 @@ port = 9999
 	// Assert
 	require.NoError(t, err)
 	assert.Equal(t, filepath.Join("configs", "default.toml"), configPath)
-	
+
 	// Verify existing config wasn't overwritten
 	content, err := os.ReadFile(defaultConfigPath)
 	require.NoError(t, err)
@@ -75,7 +75,7 @@ func TestValidateConfigFile_ValidFile_ShouldPass(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "valid.toml")
-	
+
 	validConfig := `[server]
 port = 8080
 log_level = "info"
@@ -126,7 +126,7 @@ func TestValidateConfigFile_InvalidFile_ShouldReturnError(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "invalid.toml")
-	
+
 	invalidConfig := `[server
 port = 8080` // Invalid TOML - missing closing bracket
 	require.NoError(t, os.WriteFile(configFile, []byte(invalidConfig), 0644))
@@ -144,7 +144,7 @@ func TestResolveConfigFile_WithProvidedFile_ShouldUseProvided(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "custom.toml")
-	
+
 	validConfig := `[server]
 port = 8080
 
@@ -178,7 +178,7 @@ func TestResolveConfigFile_NoProvidedFile_ShouldUseDefault(t *testing.T) {
 	originalWd, _ := os.Getwd()
 	tempDir := t.TempDir()
 	defer os.Chdir(originalWd)
-	
+
 	os.Chdir(tempDir)
 
 	// Create a temporary state manager
@@ -198,7 +198,7 @@ func TestResolveConfigFile_NoProvidedFile_ShouldUseDefault(t *testing.T) {
 func TestResolveConfigFile_InvalidProvidedFile_ShouldReturnError(t *testing.T) {
 	// Arrange
 	invalidConfigFile := "/nonexistent/config.toml"
-	
+
 	tempDir := t.TempDir()
 	stateManager, err := createTestStateManager(t, tempDir)
 	require.NoError(t, err)
@@ -217,12 +217,12 @@ func TestResolveConfigFile_InvalidProvidedFile_ShouldReturnError(t *testing.T) {
 func createTestStateManager(t *testing.T, baseDir string) (*Manager, error) {
 	// Create a temporary settings file path
 	settingsFile := filepath.Join(baseDir, "test_settings.toml")
-	
+
 	// Create a state manager with a custom settings file for testing
 	manager := &Manager{
 		settingsFile: settingsFile,
 	}
-	
+
 	return manager, nil
 }
 
@@ -232,10 +232,10 @@ func TestResolveConfigFile_RelativePath_ShouldConvertToAbsolute(t *testing.T) {
 	tempDir := t.TempDir()
 	originalWd, _ := os.Getwd()
 	defer os.Chdir(originalWd)
-	
+
 	// Change to temp directory
 	os.Chdir(tempDir)
-	
+
 	// Create relative config file
 	relativeConfigFile := "custom.toml"
 	validConfig := `[server]

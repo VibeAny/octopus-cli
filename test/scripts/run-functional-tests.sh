@@ -205,7 +205,7 @@ main() {
     echo ""
     log_info "=== SECTION 2: Configuration Management ==="
     
-    run_test "TC-003" "Empty config list test" "No APIs configured" \
+    run_test "TC-003" "Default config list test" "official" \
         "$OCTOPUS_BIN config list"
     
     run_test "TC-004" "Add configuration test" "Added API configuration" \

@@ -89,7 +89,7 @@ func TestManager_StartDaemon_WithNoPreviousProcess_ShouldCreatePIDFile(t *testin
 	// Verify PID file contains current process PID
 	pidData, err := os.ReadFile(pidFile)
 	require.NoError(t, err)
-	
+
 	writtenPID, err := strconv.Atoi(string(pidData))
 	require.NoError(t, err)
 	assert.Equal(t, os.Getpid(), writtenPID)
@@ -312,17 +312,17 @@ func TestManager_SetupSignalHandling_ShouldAcceptCleanupFunction(t *testing.T) {
 	// This test only verifies that SetupSignalHandling can accept a cleanup function
 	// without actually triggering signals or testing the goroutine behavior
 	// to avoid interfering with test execution
-	
+
 	// Arrange
 	tempDir := t.TempDir()
 	pidFile := filepath.Join(tempDir, "signal-test.pid")
 	manager := NewManager(pidFile, "test")
-	
+
 	// Define a simple cleanup function
 	cleanup := func() {
 		// This function should be callable without issues
 	}
-	
+
 	// Act & Assert - this should not panic or cause immediate issues
 	assert.NotPanics(t, func() {
 		// We skip actually calling SetupSignalHandling to avoid background goroutines
@@ -340,18 +340,18 @@ func TestManager_SetupSignalHandling_ShouldAcceptCleanupFunction(t *testing.T) {
 func TestManager_StopDaemon_WithRunningDaemon_ShouldStopSuccessfully(t *testing.T) {
 	// NOTE: This test is modified to avoid sending SIGTERM to the test process itself
 	// which would cause the test to terminate unexpectedly.
-	
+
 	// Arrange
 	tempDir := t.TempDir()
 	pidFile := filepath.Join(tempDir, "stop-daemon-test.pid")
 	manager := NewManager(pidFile, "test")
 
-	// Create a PID file with a fake PID that doesn't exist 
+	// Create a PID file with a fake PID that doesn't exist
 	// (to simulate a daemon that has already exited)
 	fakePID := 999999
 	require.NoError(t, manager.WritePIDFile(fakePID))
 
-	// Act - try to stop the "daemon" 
+	// Act - try to stop the "daemon"
 	err := manager.StopDaemon()
 
 	// Assert - should get error because process doesn't exist
@@ -481,7 +481,7 @@ func TestManager_GetDaemonStatus_WithCorruptedPIDFile_ShouldCleanupAndReturnNotR
 func TestManager_Lifecycle_CompleteFlow_ShouldWorkCorrectly(t *testing.T) {
 	// NOTE: This test is modified to avoid sending SIGTERM to the test process itself
 	// which would cause the test to terminate unexpectedly.
-	
+
 	// Arrange
 	tempDir := t.TempDir()
 	pidFile := filepath.Join(tempDir, "lifecycle-test.pid")
@@ -531,11 +531,11 @@ func TestManager_ProcessStatus_Fields_ShouldHaveCorrectTypes(t *testing.T) {
 	assert.IsType(t, 0, status.PID)
 	assert.IsType(t, time.Duration(0), status.Uptime)
 	assert.IsType(t, time.Time{}, status.StartTime)
-	
+
 	// Verify values are set correctly
 	assert.True(t, status.IsRunning)
 	assert.Positive(t, status.PID)
-	assert.NotZero(t, status.Uptime) // Should have placeholder value
+	assert.NotZero(t, status.Uptime)           // Should have placeholder value
 	assert.False(t, status.StartTime.IsZero()) // Should have placeholder value
 
 	// Cleanup

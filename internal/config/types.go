@@ -35,12 +35,13 @@ type Settings struct {
 
 // DefaultConfig returns a default configuration
 func DefaultConfig() *Config {
+	pm := GetDefaultPathManager()
 	return &Config{
 		Server: ServerConfig{
 			Port:     8080,
 			LogLevel: "info",
 			Daemon:   true,
-			PIDFile:  "octopus.pid",
+			PIDFile:  pm.PIDFile(),
 		},
 		APIs: []APIConfig{
 			{
@@ -64,7 +65,7 @@ func DefaultConfig() *Config {
 		},
 		Settings: Settings{
 			ActiveAPI:    "",
-			LogFile:      "logs/octopus.log",
+			LogFile:      pm.LogFile(),
 			ConfigBackup: true,
 		},
 	}

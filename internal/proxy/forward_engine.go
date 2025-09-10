@@ -22,15 +22,15 @@ type ForwardEngineStats struct {
 
 // ForwardEngine handles API request forwarding with retry logic
 type ForwardEngine struct {
-	apiConfig        *config.APIConfig
-	client           *http.Client
-	timeout          time.Duration
-	retryCount       int
-	totalRequests    int64
-	successfulReqs   int64
-	failedReqs       int64
-	totalRetries     int64
-	startTime        time.Time
+	apiConfig      *config.APIConfig
+	client         *http.Client
+	timeout        time.Duration
+	retryCount     int
+	totalRequests  int64
+	successfulReqs int64
+	failedReqs     int64
+	totalRetries   int64
+	startTime      time.Time
 }
 
 // NewForwardEngine creates a new forward engine
@@ -137,7 +137,7 @@ func (f *ForwardEngine) shouldRetry(statusCode int, err error) bool {
 			"no such host",
 			"network unreachable",
 		}
-		
+
 		for _, netErr := range networkErrors {
 			if strings.Contains(errStr, netErr) {
 				return true
@@ -149,9 +149,9 @@ func (f *ForwardEngine) shouldRetry(statusCode int, err error) bool {
 	// Retry on specific HTTP status codes
 	retryableStatusCodes := []int{
 		http.StatusInternalServerError, // 500
-		http.StatusBadGateway,         // 502
-		http.StatusServiceUnavailable, // 503
-		http.StatusGatewayTimeout,     // 504
+		http.StatusBadGateway,          // 502
+		http.StatusServiceUnavailable,  // 503
+		http.StatusGatewayTimeout,      // 504
 	}
 
 	for _, code := range retryableStatusCodes {

@@ -99,11 +99,11 @@ func (s *Server) Start() error {
 	}()
 
 	s.isRunning = true
-	
+
 	if s.logger != nil {
 		s.logger.Info("Octopus proxy server started successfully on port %d", s.actualPort)
 	}
-	
+
 	return nil
 }
 
@@ -132,11 +132,11 @@ func (s *Server) Stop() error {
 	}
 
 	s.isRunning = false
-	
+
 	if s.logger != nil {
 		s.logger.Info("Octopus proxy server stopped successfully")
 	}
-	
+
 	return nil
 }
 
@@ -182,7 +182,7 @@ func (s *Server) GetStats() *ServerStats {
 // handleRequest handles incoming HTTP requests and forwards them
 func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
 	atomic.AddInt64(&s.requestCount, 1)
-	
+
 	// Log incoming request
 	if s.logger != nil {
 		s.logger.Info("Incoming request: %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
@@ -213,7 +213,7 @@ func (s *Server) handleRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("failed to forward request: %v", err), http.StatusBadGateway)
 		return
 	}
-	
+
 	// Log successful forwarding
 	if s.logger != nil {
 		s.logger.Info("Request forwarded successfully to %s", activeAPI.ID)

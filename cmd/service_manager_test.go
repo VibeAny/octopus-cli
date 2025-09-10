@@ -14,7 +14,7 @@ func TestNewServiceManager_ValidConfig_ShouldCreateManager(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test.toml")
-	
+
 	testConfig := `[server]
 port = 8080
 log_level = "info"
@@ -64,7 +64,7 @@ func TestServiceManager_Status_ShouldReturnServiceStatus(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test.toml")
-	
+
 	testConfig := `[server]
 port = 8080
 log_level = "info"
@@ -110,7 +110,7 @@ func TestServiceManager_Stop_WhenNotRunning_ShouldReturnError(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test.toml")
-	
+
 	testConfig := `[server]
 port = 8080
 log_level = "info"

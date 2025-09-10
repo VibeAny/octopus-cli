@@ -28,7 +28,7 @@ func TestRootCommand_Subcommands_ShouldHaveAllExpectedCommands(t *testing.T) {
 	// Arrange
 	cmd := newRootCommand("test", nil)
 	expectedCommands := []string{
-		"version", "start", "stop", "status", 
+		"version", "start", "stop", "status",
 		"config", "health", "logs",
 	}
 
@@ -40,10 +40,10 @@ func TestRootCommand_Subcommands_ShouldHaveAllExpectedCommands(t *testing.T) {
 
 	// Assert - verify all our commands are present
 	for _, expected := range expectedCommands {
-		assert.Contains(t, actualCommands, expected, 
+		assert.Contains(t, actualCommands, expected,
 			"Missing expected command: %s", expected)
 	}
-	
+
 	// Verify minimum command count (our commands + any auto-generated)
 	assert.GreaterOrEqual(t, len(actualCommands), len(expectedCommands),
 		"Should have at least the expected number of commands")
@@ -155,7 +155,7 @@ func TestConfigCommand_Subcommands_ShouldHaveAllExpectedSubcommands(t *testing.T
 
 	// Assert
 	for _, expected := range expectedSubcommands {
-		assert.Contains(t, actualSubcommands, expected, 
+		assert.Contains(t, actualSubcommands, expected,
 			"Missing expected subcommand: %s", expected)
 	}
 }
@@ -238,7 +238,7 @@ func TestRootCommand_Help_ShouldContainUsageInformation(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	helpOutput := output.String()
-	
+
 	assert.Contains(t, helpOutput, "octopus [command]")
 	assert.Contains(t, helpOutput, "Available Commands:")
 	assert.Contains(t, helpOutput, "start")

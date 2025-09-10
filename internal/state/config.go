@@ -11,7 +11,7 @@ import (
 // EnsureDefaultConfig ensures the default config file exists
 func EnsureDefaultConfig() (string, error) {
 	defaultConfigPath := filepath.Join("configs", "default.toml")
-	
+
 	// Check if default config exists
 	if _, err := os.Stat(defaultConfigPath); err == nil {
 		return defaultConfigPath, nil
@@ -24,7 +24,7 @@ func EnsureDefaultConfig() (string, error) {
 
 	// Create default configuration
 	defaultConfig := config.DefaultConfig()
-	
+
 	// Create config manager to save the default config
 	configManager := config.NewManager(defaultConfigPath)
 	if err := configManager.SaveConfig(defaultConfig); err != nil {
@@ -104,7 +104,7 @@ func ResolveConfigFile(providedConfigFile string, stateManager *Manager) (string
 				if err != nil {
 					return "", false, fmt.Errorf("failed to create default config: %w", err)
 				}
-				
+
 				// Convert to absolute path
 				if !filepath.IsAbs(defaultConfig) {
 					wd, err := os.Getwd()
@@ -113,7 +113,7 @@ func ResolveConfigFile(providedConfigFile string, stateManager *Manager) (string
 					}
 					defaultConfig = filepath.Join(wd, defaultConfig)
 				}
-				
+
 				configFile = defaultConfig
 				// Update saved config to default
 				if err := stateManager.SetCurrentConfigFile(configFile); err != nil {
@@ -128,7 +128,7 @@ func ResolveConfigFile(providedConfigFile string, stateManager *Manager) (string
 			if err != nil {
 				return "", false, fmt.Errorf("failed to create default config: %w", err)
 			}
-			
+
 			// Convert to absolute path
 			if !filepath.IsAbs(defaultConfig) {
 				wd, err := os.Getwd()
@@ -137,7 +137,7 @@ func ResolveConfigFile(providedConfigFile string, stateManager *Manager) (string
 				}
 				defaultConfig = filepath.Join(wd, defaultConfig)
 			}
-			
+
 			configFile = defaultConfig
 			// Save default as current config
 			if err := stateManager.SetCurrentConfigFile(configFile); err != nil {

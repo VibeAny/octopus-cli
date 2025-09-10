@@ -88,3 +88,6 @@ test-config.toml
 .claude
 .mcp.json
 .serena
+
+# temp binary
+octopus*

@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,11 +18,17 @@ func TestDefaultConfig_Creation_ShouldHaveCorrectDefaults(t *testing.T) {
 	assert.Equal(t, 8080, config.Server.Port)
 	assert.Equal(t, "info", config.Server.LogLevel)
 	assert.True(t, config.Server.Daemon)
-	assert.Equal(t, "octopus.pid", config.Server.PIDFile)
-	
-	assert.Empty(t, config.APIs)
+	// PIDFile should now be an absolute path
+	assert.Contains(t, config.Server.PIDFile, "octopus.pid")
+
+	// APIs now include example configurations by default
+	assert.Len(t, config.APIs, 2)
+	assert.Equal(t, "official-example", config.APIs[0].ID)
+	assert.Equal(t, "proxy-example", config.APIs[1].ID)
+
 	assert.Equal(t, "", config.Settings.ActiveAPI)
-	assert.Equal(t, "logs/octopus.log", config.Settings.LogFile)
+	// LogFile should now be an absolute path
+	assert.Contains(t, config.Settings.LogFile, "octopus.log")
 	assert.True(t, config.Settings.ConfigBackup)
 }
 
@@ -31,8 +38,12 @@ func TestNewManager_WithDefaultPath_ShouldUseHomeDirectory(t *testing.T) {
 
 	// Assert
 	assert.NotNil(t, manager)
-	// The config path should contain the user's home directory
-	assert.Contains(t, manager.configPath, ".config/octopus/octopus.toml")
+	// The config path should contain octopus.toml and use platform-specific paths
+	assert.Contains(t, manager.configPath, "octopus.toml")
+	// On macOS it should contain Application Support
+	if runtime.GOOS == "darwin" {
+		assert.Contains(t, manager.configPath, "Application Support/Octopus")
+	}
 }
 
 func TestNewManager_WithCustomPath_ShouldUseProvidedPath(t *testing.T) {
@@ -59,11 +70,11 @@ func TestManager_LoadConfig_WithNonExistentFile_ShouldCreateDefaultConfig(t *tes
 	// Assert
 	require.NoError(t, err)
 	assert.NotNil(t, config)
-	
+
 	// Verify default values
 	assert.Equal(t, 8080, config.Server.Port)
 	assert.Equal(t, "info", config.Server.LogLevel)
-	
+
 	// Verify file was created
 	assert.FileExists(t, configPath)
 }
@@ -73,7 +84,7 @@ func TestManager_SaveConfig_WithValidConfig_ShouldWriteToFile(t *testing.T) {
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "save-test.toml")
 	manager := NewManager(configPath)
-	
+
 	config := DefaultConfig()
 	config.Server.Port = 9090
 	config.Settings.ActiveAPI = "test-api"
@@ -114,13 +125,15 @@ func TestManager_AddAPIConfig_WithValidAPI_ShouldAddToList(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 
-	// Verify API was added
+	// Verify API was added (should be 3 total: 2 defaults + 1 added)
 	config, err := manager.LoadConfig()
 	require.NoError(t, err)
-	assert.Len(t, config.APIs, 1)
-	assert.Equal(t, "test-api", config.APIs[0].ID)
-	assert.Equal(t, "Test API", config.APIs[0].Name)
-	assert.Equal(t, "https://api.test.com", config.APIs[0].URL)
+	assert.Len(t, config.APIs, 3)
+	// Find the added API (should be the last one)
+	addedAPI := config.APIs[2]
+	assert.Equal(t, "test-api", addedAPI.ID)
+	assert.Equal(t, "Test API", addedAPI.Name)
+	assert.Equal(t, "https://api.test.com", addedAPI.URL)
 }
 
 func TestManager_AddAPIConfig_WithDuplicateID_ShouldReturnError(t *testing.T) {
@@ -151,7 +164,7 @@ func TestManager_RemoveAPIConfig_WithExistingID_ShouldRemoveFromList(t *testing.
 	// Add two APIs
 	api1 := &APIConfig{ID: "api1", Name: "API 1", URL: "https://api1.com", APIKey: "key1"}
 	api2 := &APIConfig{ID: "api2", Name: "API 2", URL: "https://api2.com", APIKey: "key2"}
-	
+
 	require.NoError(t, manager.AddAPIConfig(api1))
 	require.NoError(t, manager.AddAPIConfig(api2))
 
@@ -161,11 +174,13 @@ func TestManager_RemoveAPIConfig_WithExistingID_ShouldRemoveFromList(t *testing.
 	// Assert
 	require.NoError(t, err)
 
-	// Verify API was removed
+	// Verify API was removed (should be 3 total: 2 defaults + 1 remaining added)
 	config, err := manager.LoadConfig()
 	require.NoError(t, err)
-	assert.Len(t, config.APIs, 1)
-	assert.Equal(t, "api2", config.APIs[0].ID)
+	assert.Len(t, config.APIs, 3)
+	// Find the remaining API (should be api2)
+	remainingAPI := config.APIs[2] // Last added API
+	assert.Equal(t, "api2", remainingAPI.ID)
 }
 
 func TestManager_RemoveAPIConfig_WithNonExistentID_ShouldReturnError(t *testing.T) {
@@ -229,7 +244,7 @@ func TestManager_GetActiveAPI_WithValidActiveAPI_ShouldReturnCorrectAPI(t *testi
 		URL:    "https://active.api.com",
 		APIKey: "active-key",
 	}
-	
+
 	require.NoError(t, manager.AddAPIConfig(api))
 	require.NoError(t, manager.SetActiveAPI("active-api"))
 
@@ -284,11 +299,11 @@ func TestManager_LoadConfig_WithInvalidTOMLFile_ShouldReturnError(t *testing.T) 
 	// Arrange
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "invalid.toml")
-	
+
 	// Create an invalid TOML file
 	invalidTOML := "invalid toml content [[[["
 	require.NoError(t, os.WriteFile(configPath, []byte(invalidTOML), 0644))
-	
+
 	manager := NewManager(configPath)
 
 	// Act

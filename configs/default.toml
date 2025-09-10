@@ -1,28 +1,37 @@
 [server]
-port = 8080
-log_level = "info"
-daemon = true
-pid_file = "octopus.pid"
+  port = 8080
+  log_level = "info"
+  daemon = true
+  pid_file = "octopus.pid"
 
 [[apis]]
-id = "official"
-name = "Anthropic Official API"
-url = "https://api.anthropic.com"
-api_key = "sk-ant-your-api-key-here"
-is_active = true
-timeout = 30
-retry_count = 3
+  id = "official"
+  name = "Anthropic Official API"
+  url = "https://api.anthropic.com"
+  api_key = "sk-ant-your-api-key-here"
+  is_active = true
+  timeout = 30
+  retry_count = 3
 
 [[apis]]
-id = "proxy1"
-name = "Proxy Service 1"
-url = "https://api.proxy1.com"
-api_key = "pk-your-proxy-key-here"
-is_active = false
-timeout = 30
-retry_count = 3
+  id = "proxy1"
+  name = "Proxy Service 1"
+  url = "https://api.proxy1.com"
+  api_key = "pk-your-proxy-key-here"
+  is_active = false
+  timeout = 30
+  retry_count = 3
+
+[[apis]]
+  id = "test-api"
+  name = "test-api"
+  url = "https://httpbin.org/anything"
+  api_key = "test-key"
+  is_active = false
+  timeout = 30
+  retry_count = 3
 
 [settings]
-active_api = "official"
-log_file = "logs/octopus.log"
-config_backup = true
+  active_api = "test-api"
+  log_file = "logs/octopus.log"
+  config_backup = true
