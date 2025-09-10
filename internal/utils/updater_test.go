@@ -50,7 +50,7 @@ func TestFindAssetForPlatform(t *testing.T) {
 		Assets: []GitHubReleaseAsset{
 			{Name: "octopus-v1.0.0-windows-amd64-20240101.12345678.exe", Size: 1000},
 			{Name: "octopus-v1.0.0-linux-amd64-20240101.12345678", Size: 1000},
-			{Name: "octopus-v1.0.0-darwin-arm64-20240101.12345678", Size: 1000},
+			{Name: "octopus-v1.0.0-macos-arm64-20240101.12345678", Size: 1000},
 			{Name: "octopus-v1.0.0-linux-amd64-20240101.12345678.sha256", Size: 64}, // Should be ignored
 		},
 	}
@@ -62,7 +62,7 @@ func TestFindAssetForPlatform(t *testing.T) {
 	}{
 		{PlatformInfo{"windows", "amd64"}, "octopus-v1.0.0-windows-amd64-20240101.12345678.exe", false},
 		{PlatformInfo{"linux", "amd64"}, "octopus-v1.0.0-linux-amd64-20240101.12345678", false},
-		{PlatformInfo{"darwin", "arm64"}, "octopus-v1.0.0-darwin-arm64-20240101.12345678", false},
+		{PlatformInfo{"macos", "arm64"}, "octopus-v1.0.0-macos-arm64-20240101.12345678", false},
 		{PlatformInfo{"freebsd", "amd64"}, "", true}, // No asset for this platform
 	}
 

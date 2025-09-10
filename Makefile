@@ -4,7 +4,7 @@
 
 # Variables
 BINARY_NAME=octopus
-VERSION?=v0.0.1
+VERSION?=v0.0.2
 DATE=$(shell date +%Y%m%d)
 GIT_SHA=$(shell git rev-parse --short=8 HEAD)
 LDFLAGS=-ldflags "-X main.version=${VERSION}"
@@ -25,7 +25,7 @@ build: ## Build the binary
 	@echo "Building ${BINARY_NAME}..."
 	go build ${LDFLAGS} -o ${BINARY_NAME} ./cmd
 
-build-all: ## Build for all platforms (Windows, macOS, Linux - all major architectures)
+build-all: ## Build for all platforms (Windows, macOS, Linux - all major architectures). Usage: make build-all VERSION=v0.0.2
 	@echo "Building for all platforms..."
 	@echo "Version: ${VERSION}, Date: ${DATE}, Git SHA: ${GIT_SHA}"
 	@mkdir -p build/release

@@ -58,6 +58,16 @@ func GetCurrentPlatform() PlatformInfo {
 	osName := runtime.GOOS
 	archName := runtime.GOARCH
 
+	// Normalize OS names to match release naming
+	switch osName {
+	case "darwin":
+		osName = "macos"
+	case "windows":
+		osName = "windows"
+	case "linux":
+		osName = "linux"
+	}
+
 	// Normalize architecture names to match release naming
 	switch archName {
 	case "amd64":
