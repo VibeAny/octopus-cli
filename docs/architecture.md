@@ -1,24 +1,43 @@
 # 架构设计文档
 
+> **版本说明**: 本文档适用于 Octopus CLI v0.0.3+  
+> **重要变更**: v0.0.3 移除了可配置的 PID 文件路径，统一使用系统管理的固定路径
+
 ## 整体架构图
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Claude Code   │───▶│ Octopus CLI Proxy│───▶│  Target API     │
-│                 │    │   (localhost)   │    │  (anthropic.com)│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌─────────────────┐
-                       │  CLI Commands   │
-                       │  (配置管理)      │
-                       └─────────────────┘
-                                │
-                                ▼
-                       ┌─────────────────┐
-                       │  TOML Config    │
-                       │  (octopus.toml) │
-                       └─────────────────┘
+```mermaid
+graph TB
+    A[Claude Code] -->|HTTP Requests| B[Octopus CLI<br/>Proxy Service<br/>Port 8080]
+    B -->|Forward Requests| C[Target API<br/>Configurable]
+    C -->|Response| B
+    B -->|Response| A
+
+    D[CLI Commands<br/>Configuration] -->|Configure| B
+    B -->|State Management| E[TOML Config<br/>octopus.toml]
+
+    subgraph "API Endpoints"
+        F[Anthropic Official]
+        G[Proxy Services]
+        H[Custom APIs]
+    end
+
+    C -.->|Dynamic Switch| F
+    C -.->|Dynamic Switch| G
+    C -.->|Dynamic Switch| H
+
+    subgraph "Process Management"
+        I[PID File<br/>os.TempDir/octopus.pid]
+        J[Process Manager<br/>v0.0.3 Unified]
+    end
+
+    B -.-> J
+    J -.-> I
+
+    style B fill:#e1f5fe
+    style D fill:#f3e5f5
+    style E fill:#fff3e0
+    style I fill:#fff8e1
+    style J fill:#f1f8e9
 ```
 
 ## 核心组件设计
@@ -105,7 +124,7 @@ type ForwardEngine interface {
 - 管理代理服务的生命周期
 - 处理进程间通信
 - 支持服务的后台运行
-- PID 文件管理
+- 统一 PID 文件管理（v0.0.3+ 使用系统临时目录）
 
 **接口设计:**
 ```go
@@ -114,8 +133,14 @@ type ProcessManager interface {
     StopDaemon() error
     GetDaemonStatus() (*ProcessStatus, error)
     SendSignal(signal os.Signal) error
+    GetPIDFilePath() string  // v0.0.3+ 新增调试方法
 }
 ```
+
+**v0.0.3 重要变更:**
+- PID 文件路径不再可配置，统一使用 `os.TempDir()/octopus.pid`
+- `NewManager()` 函数签名简化：从 `NewManager(pidFile, name)` 改为 `NewManager(name)`
+- 新增 `GetPIDFilePath()` 方法用于调试和状态显示
 
 ## CLI 命令架构设计
 
@@ -230,7 +255,7 @@ octopus-cli/
 port = 8080
 log_level = "info"
 daemon = true
-pid_file = "/tmp/octopus.pid"
+# 注意：v0.0.3+ 已移除 pid_file 配置，系统自动管理
 
 # API 配置数组
 [[apis]]
@@ -289,9 +314,10 @@ CLI Command → IPC/HTTP API → 后台守护进程
 - 敏感信息脱敏日志
 
 ### 2. 进程安全
-- PID 文件锁定防止重复启动
+- PID 文件锁定防止重复启动（v0.0.3+ 统一使用系统临时目录）
 - 信号处理确保优雅关闭
 - 临时文件安全清理
+- 跨平台临时目录权限管理
 
 ### 3. 网络安全
 - 仅监听本地接口 (127.0.0.1)

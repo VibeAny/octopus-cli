@@ -218,8 +218,8 @@ func main() {
 	}
 
 	// Check for auto-start mode (when config file is specified but no command)
-	if len(os.Args) >= 3 && (os.Args[1] == "-f" || os.Args[1] == "--config") && len(os.Args) == 3 {
-		// Auto-start mode: octopus -f config.toml
+	if len(os.Args) >= 3 && (os.Args[1] == "-c" || os.Args[1] == "--config") && len(os.Args) == 3 {
+		// Auto-start mode: octopus -c config.toml
 		providedConfigFile := os.Args[2]
 
 		configFile, configChanged, err := getConfigPath(providedConfigFile, stateManager)
@@ -303,7 +303,7 @@ restarting Claude Code or modifying environment variables.`,
 	}
 
 	// Global flags
-	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "f", "", "config file path (default: configs/default.toml or last used)")
+	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "config file path (default: configs/default.toml or last used)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "disable colored output")
 
@@ -434,6 +434,10 @@ func newStatusCommand(configFile *string, stateManager *state.Manager) *cobra.Co
 				cmd.Printf("Failed to get service status: %v\n", err)
 				return err
 			}
+
+			// Display PID file path for debugging
+			pidFilePath := serviceManager.processManager.GetPIDFilePath()
+			cmd.Printf("PID file path: %s\n", pidFilePath)
 
 			// Display status information
 			if status.IsRunning {
@@ -588,8 +592,8 @@ func newLogsCommand(configFile *string, stateManager *state.Manager) *cobra.Comm
 		},
 	}
 
-	// Add follow flag (no short flag to avoid conflict with -f config flag)
-	cmd.Flags().BoolVar(&follow, "follow", false, "Follow log output")
+	// Add follow flag with -f short flag
+	cmd.Flags().BoolVarP(&follow, "follow", "f", false, "Follow log output")
 
 	return cmd
 }

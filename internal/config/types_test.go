@@ -37,14 +37,12 @@ func TestServerConfig_StructureTags_ShouldHaveCorrectTOMLTags(t *testing.T) {
 		Port:     8080,
 		LogLevel: "debug",
 		Daemon:   false,
-		PIDFile:  "/test/path",
 	}
 
 	// Act & Assert
 	assert.Equal(t, 8080, server.Port)
 	assert.Equal(t, "debug", server.LogLevel)
 	assert.False(t, server.Daemon)
-	assert.Equal(t, "/test/path", server.PIDFile)
 }
 
 func TestSettings_StructureTags_ShouldHaveCorrectTOMLTags(t *testing.T) {
@@ -68,7 +66,6 @@ func TestConfig_CompleteStructure_ShouldHaveAllNestedFields(t *testing.T) {
 			Port:     9090,
 			LogLevel: "error",
 			Daemon:   true,
-			PIDFile:  "/custom/pid",
 		},
 		APIs: []APIConfig{
 			{
@@ -122,8 +119,7 @@ func TestDefaultConfig_Values_ShouldMatchExpectedDefaults(t *testing.T) {
 	assert.Equal(t, 8080, config.Server.Port)
 	assert.Equal(t, "info", config.Server.LogLevel)
 	assert.True(t, config.Server.Daemon)
-	// PIDFile should now be an absolute path
-	assert.Contains(t, config.Server.PIDFile, "octopus.pid")
+	// Note: PIDFile is now managed internally and not configurable
 
 	// APIs now include example configurations by default
 	assert.Len(t, config.APIs, 2)
@@ -166,11 +162,11 @@ func TestConfig_TOMLFieldNames_ShouldBeSnakeCase(t *testing.T) {
 	assert.NotNil(t, config.Settings, "settings section should exist")
 
 	// Field names should follow TOML conventions:
-	// - Server.PIDFile should serialize to "pid_file"
 	// - Settings.ActiveAPI should serialize to "active_api"
 	// - Settings.LogFile should serialize to "log_file"
 	// - Settings.ConfigBackup should serialize to "config_backup"
 	// - APIs.IsActive should serialize to "is_active"
 	// - APIs.APIKey should serialize to "api_key"
 	// - APIs.RetryCount should serialize to "retry_count"
+	// Note: Server.PIDFile was removed - now managed internally
 }

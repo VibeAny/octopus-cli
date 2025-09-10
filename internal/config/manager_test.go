@@ -18,8 +18,6 @@ func TestDefaultConfig_Creation_ShouldHaveCorrectDefaults(t *testing.T) {
 	assert.Equal(t, 8080, config.Server.Port)
 	assert.Equal(t, "info", config.Server.LogLevel)
 	assert.True(t, config.Server.Daemon)
-	// PIDFile should now be an absolute path
-	assert.Contains(t, config.Server.PIDFile, "octopus.pid")
 
 	// APIs now include example configurations by default
 	assert.Len(t, config.APIs, 2)

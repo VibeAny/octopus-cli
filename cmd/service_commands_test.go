@@ -7,11 +7,12 @@ import (
 	"path/filepath"
 	"testing"
 
+	"octopus-cli/internal/process"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// TestStartCommand_Execute_ShouldStartProxyService tests the start command functionality
 func TestStartCommand_Execute_ShouldStartProxyService(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
@@ -21,7 +22,6 @@ func TestStartCommand_Execute_ShouldStartProxyService(t *testing.T) {
 	testConfig := `[server]
 port = 0
 daemon = false
-pid_file = "` + filepath.Join(tempDir, "test.pid") + `"
 
 [[apis]]
 id = "test-api"
@@ -83,12 +83,10 @@ func TestStopCommand_Execute_ShouldStopRunningService(t *testing.T) {
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test.toml")
-	pidFile := filepath.Join(tempDir, "test.pid")
 
 	testConfig := `[server]
 port = 8080
 daemon = true
-pid_file = "` + pidFile + `"
 
 [[apis]]
 id = "test-api"
@@ -100,9 +98,13 @@ active_api = "test-api"
 `
 	require.NoError(t, os.WriteFile(configFile, []byte(testConfig), 0644))
 
+	// Create process manager and get the actual PID file path
+	processManager := process.NewManager("octopus")
+	pidFilePath := processManager.GetPIDFilePath()
+
 	// Create a PID file with a non-existent PID to avoid killing the test process
 	fakePID := 999999
-	require.NoError(t, os.WriteFile(pidFile, []byte(fmt.Sprintf("%d", fakePID)), 0644))
+	require.NoError(t, os.WriteFile(pidFilePath, []byte(fmt.Sprintf("%d", fakePID)), 0644))
 
 	stateManager := createTestStateManager(t)
 	cmd := newStopCommand(&configFile, stateManager)
@@ -127,7 +129,6 @@ func TestStopCommand_Execute_WhenNotRunning_ShouldReturnError(t *testing.T) {
 
 	testConfig := `[server]
 port = 8080
-pid_file = "` + filepath.Join(tempDir, "nonexistent.pid") + `"
 
 [settings]
 active_api = ""
@@ -154,11 +155,9 @@ func TestStatusCommand_Execute_WithRunningService_ShouldShowRunningStatus(t *tes
 	// Arrange
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test.toml")
-	pidFile := filepath.Join(tempDir, "test.pid")
 
 	testConfig := `[server]
 port = 8080
-pid_file = "` + pidFile + `"
 
 [[apis]]
 id = "test-api"
@@ -170,8 +169,12 @@ active_api = "test-api"
 `
 	require.NoError(t, os.WriteFile(configFile, []byte(testConfig), 0644))
 
+	// Create process manager and get the actual PID file path
+	processManager := process.NewManager("octopus")
+	pidFilePath := processManager.GetPIDFilePath()
+
 	// Create PID file to simulate running service
-	require.NoError(t, os.WriteFile(pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644))
+	require.NoError(t, os.WriteFile(pidFilePath, []byte(fmt.Sprintf("%d", os.Getpid())), 0644))
 
 	stateManager := createTestStateManager(t)
 	cmd := newStatusCommand(&configFile, stateManager)
@@ -191,7 +194,7 @@ active_api = "test-api"
 	assert.Contains(t, outputStr, "Active API: test-api")
 
 	// Cleanup
-	os.Remove(pidFile)
+	os.Remove(pidFilePath)
 }
 
 func TestStatusCommand_Execute_WithStoppedService_ShouldShowStoppedStatus(t *testing.T) {
@@ -201,7 +204,6 @@ func TestStatusCommand_Execute_WithStoppedService_ShouldShowStoppedStatus(t *tes
 
 	testConfig := `[server]
 port = 8080
-pid_file = "` + filepath.Join(tempDir, "nonexistent.pid") + `"
 
 [settings]
 active_api = ""

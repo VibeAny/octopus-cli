@@ -14,54 +14,49 @@ import (
 
 func TestNewManager_WithValidParameters_ShouldCreateManager(t *testing.T) {
 	// Arrange
-	pidFile := "/tmp/test.pid"
 	name := "test-daemon"
 
 	// Act
-	manager := NewManager(pidFile, name)
+	manager := NewManager(name)
 
 	// Assert
 	assert.NotNil(t, manager)
-	assert.Equal(t, pidFile, manager.pidFile)
+	assert.Contains(t, manager.pidFile, "octopus.pid")
 	assert.Equal(t, name, manager.name)
 }
 
-// TestNewManager_WithRelativePath_ShouldConvertToAbsolute tests relative path conversion
-func TestNewManager_WithRelativePath_ShouldConvertToAbsolute(t *testing.T) {
+// TestNewManager_WithFixedPath_ShouldUseSystemTempDir tests system temp directory usage
+func TestNewManager_WithFixedPath_ShouldUseSystemTempDir(t *testing.T) {
 	// Arrange
-	relativePidFile := "test.pid"
 	name := "test-daemon"
 
 	// Act
-	manager := NewManager(relativePidFile, name)
+	manager := NewManager(name)
 
 	// Assert
 	assert.NotNil(t, manager)
 	assert.True(t, filepath.IsAbs(manager.pidFile), "PID file path should be absolute")
-	assert.Contains(t, manager.pidFile, "test.pid")
+	assert.Contains(t, manager.pidFile, "octopus.pid")
 	assert.Equal(t, name, manager.name)
 }
 
 // TestNewManager_WithEmptyName_ShouldAcceptEmptyName tests behavior with empty name
 func TestNewManager_WithEmptyName_ShouldAcceptEmptyName(t *testing.T) {
 	// Arrange
-	pidFile := "/tmp/test.pid"
 	name := ""
 
 	// Act
-	manager := NewManager(pidFile, name)
+	manager := NewManager(name)
 
 	// Assert
 	assert.NotNil(t, manager)
-	assert.Equal(t, pidFile, manager.pidFile)
+	assert.Contains(t, manager.pidFile, "octopus.pid")
 	assert.Empty(t, manager.name)
 }
 
 func TestManager_GetDaemonStatus_WithNoPIDFile_ShouldReturnNotRunning(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "nonexistent.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Act
 	status, err := manager.GetDaemonStatus()
@@ -75,19 +70,17 @@ func TestManager_GetDaemonStatus_WithNoPIDFile_ShouldReturnNotRunning(t *testing
 
 func TestManager_StartDaemon_WithNoPreviousProcess_ShouldCreatePIDFile(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "start-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Act
 	err := manager.StartDaemon()
 
 	// Assert
 	require.NoError(t, err)
-	assert.FileExists(t, pidFile)
+	assert.FileExists(t, manager.GetPIDFilePath())
 
 	// Verify PID file contains current process PID
-	pidData, err := os.ReadFile(pidFile)
+	pidData, err := os.ReadFile(manager.GetPIDFilePath())
 	require.NoError(t, err)
 
 	writtenPID, err := strconv.Atoi(string(pidData))
@@ -100,9 +93,7 @@ func TestManager_StartDaemon_WithNoPreviousProcess_ShouldCreatePIDFile(t *testin
 
 func TestManager_StartDaemon_WithExistingRunningProcess_ShouldReturnError(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "duplicate-start-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Start daemon first time
 	require.NoError(t, manager.StartDaemon())
@@ -120,9 +111,7 @@ func TestManager_StartDaemon_WithExistingRunningProcess_ShouldReturnError(t *tes
 
 func TestManager_GetDaemonStatus_WithValidRunningProcess_ShouldReturnRunningStatus(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "status-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Start daemon first
 	require.NoError(t, manager.StartDaemon())
@@ -142,13 +131,12 @@ func TestManager_GetDaemonStatus_WithValidRunningProcess_ShouldReturnRunningStat
 
 func TestManager_GetDaemonStatus_WithStalePIDFile_ShouldCleanupAndReturnNotRunning(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "stale-pid-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Create a stale PID file with non-existent PID
 	stalePID := 999999 // Assuming this PID doesn't exist
-	require.NoError(t, os.WriteFile(pidFile, []byte(strconv.Itoa(stalePID)), 0644))
+	pidFilePath := manager.GetPIDFilePath()
+	require.NoError(t, os.WriteFile(pidFilePath, []byte(strconv.Itoa(stalePID)), 0644))
 
 	// Act
 	status, err := manager.GetDaemonStatus()
@@ -159,32 +147,29 @@ func TestManager_GetDaemonStatus_WithStalePIDFile_ShouldCleanupAndReturnNotRunni
 	assert.Zero(t, status.PID)
 
 	// Verify stale PID file was cleaned up
-	assert.NoFileExists(t, pidFile)
+	assert.NoFileExists(t, pidFilePath)
 }
 
 func TestManager_CleanupPIDFile_WithExistingFile_ShouldRemoveFile(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "cleanup-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
+	pidFilePath := manager.GetPIDFilePath()
 
 	// Create PID file
-	require.NoError(t, os.WriteFile(pidFile, []byte("12345"), 0644))
-	assert.FileExists(t, pidFile)
+	require.NoError(t, os.WriteFile(pidFilePath, []byte("12345"), 0644))
+	assert.FileExists(t, pidFilePath)
 
 	// Act
 	err := manager.CleanupPIDFile()
 
 	// Assert
 	require.NoError(t, err)
-	assert.NoFileExists(t, pidFile)
+	assert.NoFileExists(t, pidFilePath)
 }
 
 func TestManager_CleanupPIDFile_WithNonExistentFile_ShouldReturnError(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "nonexistent-cleanup.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Act
 	err := manager.CleanupPIDFile()
@@ -196,9 +181,7 @@ func TestManager_CleanupPIDFile_WithNonExistentFile_ShouldReturnError(t *testing
 
 func TestManager_SendSignal_WithNoRunningProcess_ShouldReturnError(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "signal-no-process-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Act
 	err := manager.SendSignal(syscall.SIGTERM)
@@ -210,9 +193,7 @@ func TestManager_SendSignal_WithNoRunningProcess_ShouldReturnError(t *testing.T)
 
 func TestManager_SendSignal_WithRunningProcess_ShouldSendSignalSuccessfully(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "signal-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Start daemon
 	require.NoError(t, manager.StartDaemon())
@@ -229,12 +210,11 @@ func TestManager_SendSignal_WithRunningProcess_ShouldSendSignalSuccessfully(t *t
 
 func TestManager_readPIDFile_WithValidPIDFile_ShouldReturnCorrectPID(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "read-pid-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
+	pidFilePath := manager.GetPIDFilePath()
 
 	expectedPID := 12345
-	require.NoError(t, os.WriteFile(pidFile, []byte(strconv.Itoa(expectedPID)), 0644))
+	require.NoError(t, os.WriteFile(pidFilePath, []byte(strconv.Itoa(expectedPID)), 0644))
 
 	// Act
 	pid, err := manager.readPIDFile()
@@ -246,11 +226,10 @@ func TestManager_readPIDFile_WithValidPIDFile_ShouldReturnCorrectPID(t *testing.
 
 func TestManager_readPIDFile_WithInvalidPIDContent_ShouldReturnError(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "invalid-pid-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
+	pidFilePath := manager.GetPIDFilePath()
 
-	require.NoError(t, os.WriteFile(pidFile, []byte("not-a-number"), 0644))
+	require.NoError(t, os.WriteFile(pidFilePath, []byte("not-a-number"), 0644))
 
 	// Act
 	pid, err := manager.readPIDFile()
@@ -263,9 +242,11 @@ func TestManager_readPIDFile_WithInvalidPIDContent_ShouldReturnError(t *testing.
 
 func TestManager_readPIDFile_WithNonExistentFile_ShouldReturnError(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "nonexistent-read.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
+	pidFilePath := manager.GetPIDFilePath()
+
+	// Ensure PID file doesn't exist
+	os.Remove(pidFilePath)
 
 	// Act
 	pid, err := manager.readPIDFile()
@@ -278,9 +259,8 @@ func TestManager_readPIDFile_WithNonExistentFile_ShouldReturnError(t *testing.T)
 
 func TestManager_writePIDFile_WithValidPID_ShouldCreateFile(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "write-pid-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
+	pidFilePath := manager.GetPIDFilePath()
 
 	testPID := 54321
 
@@ -289,10 +269,10 @@ func TestManager_writePIDFile_WithValidPID_ShouldCreateFile(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
-	assert.FileExists(t, pidFile)
+	assert.FileExists(t, pidFilePath)
 
 	// Verify content
-	content, err := os.ReadFile(pidFile)
+	content, err := os.ReadFile(pidFilePath)
 	require.NoError(t, err)
 	assert.Equal(t, strconv.Itoa(testPID), string(content))
 }
@@ -314,9 +294,7 @@ func TestManager_SetupSignalHandling_ShouldAcceptCleanupFunction(t *testing.T) {
 	// to avoid interfering with test execution
 
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "signal-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Define a simple cleanup function
 	cleanup := func() {
@@ -342,9 +320,7 @@ func TestManager_StopDaemon_WithRunningDaemon_ShouldStopSuccessfully(t *testing.
 	// which would cause the test to terminate unexpectedly.
 
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "stop-daemon-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Create a PID file with a fake PID that doesn't exist
 	// (to simulate a daemon that has already exited)
@@ -363,9 +339,7 @@ func TestManager_StopDaemon_WithRunningDaemon_ShouldStopSuccessfully(t *testing.
 // TestManager_StopDaemon_WithNoRunningDaemon_ShouldReturnError tests stopping when no daemon is running
 func TestManager_StopDaemon_WithNoRunningDaemon_ShouldReturnError(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "stop-no-daemon-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Act
 	err := manager.StopDaemon()
@@ -378,13 +352,12 @@ func TestManager_StopDaemon_WithNoRunningDaemon_ShouldReturnError(t *testing.T) 
 // TestManager_StopDaemon_WithStalePIDFile_ShouldReturnError tests stopping with stale PID file
 func TestManager_StopDaemon_WithStalePIDFile_ShouldReturnError(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "stop-stale-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
+	pidFilePath := manager.GetPIDFilePath()
 
 	// Create stale PID file with non-existent PID
 	stalePID := 999999
-	require.NoError(t, os.WriteFile(pidFile, []byte(strconv.Itoa(stalePID)), 0644))
+	require.NoError(t, os.WriteFile(pidFilePath, []byte(strconv.Itoa(stalePID)), 0644))
 
 	// Act
 	err := manager.StopDaemon()
@@ -397,9 +370,8 @@ func TestManager_StopDaemon_WithStalePIDFile_ShouldReturnError(t *testing.T) {
 // TestManager_WritePIDFile_PublicMethod_ShouldWriteCorrectly tests the public WritePIDFile method
 func TestManager_WritePIDFile_PublicMethod_ShouldWriteCorrectly(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "public-write-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
+	pidFilePath := manager.GetPIDFilePath()
 	testPID := 9876
 
 	// Act
@@ -407,34 +379,35 @@ func TestManager_WritePIDFile_PublicMethod_ShouldWriteCorrectly(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
-	assert.FileExists(t, pidFile)
+	assert.FileExists(t, pidFilePath)
 
 	// Verify content
-	content, err := os.ReadFile(pidFile)
+	content, err := os.ReadFile(pidFilePath)
 	require.NoError(t, err)
 	assert.Equal(t, strconv.Itoa(testPID), string(content))
 }
 
-// TestManager_WritePIDFile_WithInvalidDirectory_ShouldReturnError tests writing to invalid directory
-func TestManager_WritePIDFile_WithInvalidDirectory_ShouldReturnError(t *testing.T) {
-	// Arrange - use an invalid directory path
-	invalidPidFile := "/invalid_root_path/cannot_create/test.pid"
-	manager := NewManager(invalidPidFile, "test")
+// TestManager_WritePIDFile_WithValidPID_ShouldSucceedInSystemTempDir tests writing to system temp directory
+func TestManager_WritePIDFile_WithValidPID_ShouldSucceedInSystemTempDir(t *testing.T) {
+	// Arrange
+	manager := NewManager("test")
 	testPID := 1234
 
 	// Act
 	err := manager.WritePIDFile(testPID)
 
-	// Assert
-	assert.Error(t, err)
+	// Assert - should succeed since we use system temp directory
+	assert.NoError(t, err)
+	assert.FileExists(t, manager.GetPIDFilePath())
+
+	// Cleanup
+	manager.CleanupPIDFile()
 }
 
 // TestManager_SendSignal_WithDifferentSignals_ShouldHandleCorrectly tests sending different signals
 func TestManager_SendSignal_WithDifferentSignals_ShouldHandleCorrectly(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "multi-signal-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Start daemon
 	require.NoError(t, manager.StartDaemon())
@@ -461,12 +434,11 @@ func TestManager_SendSignal_WithDifferentSignals_ShouldHandleCorrectly(t *testin
 // TestManager_GetDaemonStatus_WithCorruptedPIDFile_ShouldCleanupAndReturnNotRunning tests handling corrupted PID files
 func TestManager_GetDaemonStatus_WithCorruptedPIDFile_ShouldCleanupAndReturnNotRunning(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "corrupted-pid-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
+	pidFilePath := manager.GetPIDFilePath()
 
 	// Create corrupted PID file
-	require.NoError(t, os.WriteFile(pidFile, []byte("not-a-valid-pid-12345abc"), 0644))
+	require.NoError(t, os.WriteFile(pidFilePath, []byte("not-a-valid-pid-12345abc"), 0644))
 
 	// Act
 	status, err := manager.GetDaemonStatus()
@@ -483,9 +455,8 @@ func TestManager_Lifecycle_CompleteFlow_ShouldWorkCorrectly(t *testing.T) {
 	// which would cause the test to terminate unexpectedly.
 
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "lifecycle-test.pid")
-	manager := NewManager(pidFile, "test-daemon")
+	manager := NewManager("test-daemon")
+	pidFilePath := manager.GetPIDFilePath()
 
 	// Initial state - not running
 	status, err := manager.GetDaemonStatus()
@@ -509,15 +480,13 @@ func TestManager_Lifecycle_CompleteFlow_ShouldWorkCorrectly(t *testing.T) {
 	require.NoError(t, manager.CleanupPIDFile())
 
 	// Verify stopped and cleaned up
-	assert.NoFileExists(t, pidFile)
+	assert.NoFileExists(t, pidFilePath)
 }
 
 // TestManager_ProcessStatus_Fields_ShouldHaveCorrectTypes tests ProcessStatus field types
 func TestManager_ProcessStatus_Fields_ShouldHaveCorrectTypes(t *testing.T) {
 	// Arrange
-	tempDir := t.TempDir()
-	pidFile := filepath.Join(tempDir, "status-fields-test.pid")
-	manager := NewManager(pidFile, "test")
+	manager := NewManager("test")
 
 	// Start daemon
 	require.NoError(t, manager.StartDaemon())

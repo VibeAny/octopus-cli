@@ -12,7 +12,6 @@ type ServerConfig struct {
 	Port     int    `toml:"port"`
 	LogLevel string `toml:"log_level"`
 	Daemon   bool   `toml:"daemon"`
-	PIDFile  string `toml:"pid_file"`
 }
 
 // APIConfig represents an API configuration
@@ -41,7 +40,6 @@ func DefaultConfig() *Config {
 			Port:     8080,
 			LogLevel: "info",
 			Daemon:   true,
-			PIDFile:  pm.PIDFile(),
 		},
 		APIs: []APIConfig{
 			{

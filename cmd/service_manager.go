@@ -28,8 +28,8 @@ func NewServiceManager(configFile string) (*ServiceManager, error) {
 		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
 
-	// Create process manager
-	processManager := process.NewManager(cfg.Server.PIDFile, "octopus")
+	// Create process manager with fixed PID file location
+	processManager := process.NewManager("octopus")
 
 	// Create proxy server
 	proxyServer := proxy.NewServer(cfg)

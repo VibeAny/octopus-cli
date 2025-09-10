@@ -29,8 +29,12 @@ func TestGetCurrentPlatform(t *testing.T) {
 	assert.NotEmpty(t, platform.OS)
 	assert.NotEmpty(t, platform.Arch)
 
-	// Should match current runtime
-	assert.Equal(t, runtime.GOOS, platform.OS)
+	// OS should be normalized for platform consistency
+	expectedOS := runtime.GOOS
+	if expectedOS == "darwin" {
+		expectedOS = "macos" // Darwin is mapped to macOS for artifact naming consistency
+	}
+	assert.Equal(t, expectedOS, platform.OS)
 
 	// Architecture should be normalized
 	expectedArch := runtime.GOARCH

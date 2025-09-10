@@ -55,9 +55,9 @@ wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh 
 # - Linux: amd64, arm64, 386
 
 # macOS ARM64 (Apple Silicon) 示例
-wget https://github.com/VibeAny/octopus-cli/releases/latest/download/octopus-v0.0.1-macos-arm64-YYYYMMDD.xxxxxxxx
-chmod +x octopus-v0.0.1-macos-arm64-*
-sudo mv octopus-v0.0.1-macos-arm64-* /usr/local/bin/octopus
+wget https://github.com/VibeAny/octopus-cli/releases/latest/download/octopus-v0.0.3-macos-arm64-YYYYMMDD.xxxxxxxx
+chmod +x octopus-v0.0.3-macos-arm64-*
+sudo mv octopus-v0.0.3-macos-arm64-* /usr/local/bin/octopus
 ```
 
 **从源码编译：**
@@ -261,7 +261,7 @@ make build-all
 - **macOS**: amd64 (Intel), arm64 (Apple Silicon)
 - **Linux**: amd64, arm64, 386
 
-所有二进制文件使用命名规范：`octopus-v0.0.1-platform-YYYYMMDD.git_sha`
+所有二进制文件使用命名规范：`octopus-v0.0.3-platform-YYYYMMDD.git_sha`
 
 ### TDD 工作流
 

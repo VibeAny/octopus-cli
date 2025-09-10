@@ -25,14 +25,9 @@ type Manager struct {
 }
 
 // NewManager creates a new process manager
-func NewManager(pidFile, name string) *Manager {
-	// Convert relative paths to absolute paths based on executable directory
-	if !filepath.IsAbs(pidFile) {
-		if execPath, err := os.Executable(); err == nil {
-			execDir := filepath.Dir(execPath)
-			pidFile = filepath.Join(execDir, pidFile)
-		}
-	}
+func NewManager(name string) *Manager {
+	// Use cross-platform temp directory for PID file
+	pidFile := filepath.Join(os.TempDir(), "octopus.pid")
 
 	return &Manager{
 		pidFile: pidFile,
@@ -143,6 +138,11 @@ func (m *Manager) SendSignal(signal os.Signal) error {
 // CleanupPIDFile removes the PID file
 func (m *Manager) CleanupPIDFile() error {
 	return os.Remove(m.pidFile)
+}
+
+// GetPIDFilePath returns the PID file path being used
+func (m *Manager) GetPIDFilePath() string {
+	return m.pidFile
 }
 
 // SetupSignalHandling sets up graceful shutdown on signals

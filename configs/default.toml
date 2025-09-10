@@ -2,7 +2,6 @@
   port = 8080
   log_level = "info"
   daemon = true
-  pid_file = "octopus.pid"
 
 [[apis]]
   id = "official"
