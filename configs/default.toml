@@ -31,6 +31,6 @@
   retry_count = 3
 
 [settings]
-  active_api = "test-api"
+  active_api = "official"
   log_file = "logs/octopus.log"
   config_backup = true
