@@ -7,25 +7,68 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/VibeAny/octopus-cli)
 [![Functional Tests](https://img.shields.io/badge/functional_tests-26/26_passing-brightgreen)](test/reports/test-report.md)
 
-> 🐙 A command-line tool for dynamic Claude Code API management and forwarding
+> 🐙 A universal proxy tool for coding agents - Dynamic API management and forwarding
 
 ## Overview
 
-Octopus CLI is a powerful command-line tool that solves the pain point of frequently switching Claude Code API providers. Instead of manually modifying environment variables and restarting Claude Code each time, Octopus CLI provides a local proxy service that allows you to dynamically switch between multiple API configurations without any restarts.
+Octopus CLI is a powerful command-line tool that provides universal proxy services for coding agents. Starting as a solution for Claude Code API switching, it now evolves into a comprehensive proxy tool supporting multiple coding agents including Claude Code, GitHub Codex, Gemini Code, CodeBuddy, and more.
+
+**Current Version**: v0.0.4 - Enhanced upgrade workflow with service lifecycle management  
+**Next Major Release**: v0.1.0 - Multi-agent support and revolutionary user experience
 
 ## Key Features
 
+### Core Proxy Capabilities
 - 🔀 **Dynamic API Switching** - Switch between API providers instantly without restarts
-- 📄 **TOML Configuration** - Clean, readable configuration format
-- 💻 **CLI Interface** - Intuitive command-line operations with colorized output
-- 📝 **Config Editor** - Edit configuration files with your system's default editor
-- 🔄 **Local Proxy** - Transparent HTTP proxy for Claude Code
-- 🏥 **Health Checking** - Monitor API endpoint availability
-- 📊 **Request Logging** - Track and monitor API usage with real-time log following
-- 🔒 **Secure** - API keys stored securely with proper permissions
-- 🎨 **Beautiful UI** - Colorized tables and status indicators with proper alignment
-- 🚀 **Auto Upgrade** - Seamless upgrade system with GitHub Releases integration
+- 🤖 **Multi-Agent Support** (v0.1.0+) - Universal proxy for Claude Code, GitHub Codex, Gemini, and more
+- 🧠 **Smart Routing** (v0.1.0+) - Intelligent request routing based on agent detection
+- 🔄 **Local Proxy** - Transparent HTTP proxy for seamless integration
+
+### User Experience Excellence  
+- 💻 **Beautiful CLI Interface** - Modern, colorized output with professional typography
+- 🎭 **Interactive Animations** (v0.1.0+) - Progress bars, spinners, and smooth transitions
+- 📝 **Smart Config Editor** - Edit configurations with system's default editor
+- 🎨 **Responsive Design** (v0.1.0+) - Adaptive layouts for different terminal sizes
+
+### Management & Monitoring
+- 📄 **TOML Configuration** - Clean, readable configuration format with multi-agent support
+- 🏥 **Health Checking** - Monitor API endpoint availability and performance
+- 📊 **Request Logging** - Track and monitor API usage with real-time log following  
+- 🔒 **Secure** - API keys stored securely with proper file permissions
+
+### DevOps & Reliability
+- 🚀 **Auto Upgrade** - Seamless upgrade system with service lifecycle management
 - 🌍 **Multi-Platform** - Native binaries for Windows, macOS, Linux (all architectures)
+- 🔧 **Zero-Downtime Updates** - Service continuity during upgrades
+- 📈 **Performance Monitoring** (v0.1.0+) - Usage analytics and optimization insights
+
+## Roadmap
+
+### v0.1.0 - Multi-Agent Revolution (Coming Soon)
+
+The next major release will transform Octopus CLI into a universal coding agent proxy:
+
+#### 🤖 Multi-Agent Support
+- **Universal Compatibility**: Support for Claude Code, GitHub Codex, Gemini Code, CodeBuddy
+- **Smart Agent Detection**: Automatic agent type identification via User-Agent analysis
+- **Intelligent Routing**: Dynamic request routing based on agent capabilities
+- **Unified Configuration**: Single config file managing multiple agent types
+
+#### 🎨 Revolutionary User Experience  
+- **Modern CLI Design**: Professional typography and responsive layouts
+- **Interactive Animations**: Smooth progress bars, elegant spinners, loading states
+- **Smart Interfaces**: Interactive configuration wizards and multi-selectors
+- **Adaptive Display**: Terminal-width responsive tables and panels
+
+#### 🧠 Advanced Features
+- **Performance Analytics**: Usage patterns and optimization insights
+- **Health Monitoring**: Real-time agent and API health tracking
+- **Configuration Management**: Template-based setups and migration tools
+- **Developer Experience**: Enhanced debugging and troubleshooting tools
+
+**Timeline**: 6-8 months development cycle with extensive testing and user feedback integration.
+
+---
 
 ## Quick Start
 
@@ -33,13 +76,11 @@ Octopus CLI is a powerful command-line tool that solves the pain point of freque
 
 **One-Command Install (Recommended):**
 
-#### Install latest version with one command
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
 ```
 
-#### Or using wget
+**Or using wget:**
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh | bash
@@ -54,9 +95,9 @@ wget -qO- https://raw.githubusercontent.com/VibeAny/octopus-cli/main/install.sh 
 # - Linux: amd64, arm64, 386
 
 # Example for macOS ARM64 (Apple Silicon)
-wget https://github.com/VibeAny/octopus-cli/releases/latest/download/octopus-v0.0.3-macos-arm64-YYYYMMDD.xxxxxxxx
-chmod +x octopus-v0.0.3-macos-arm64-*
-sudo mv octopus-v0.0.3-macos-arm64-* /usr/local/bin/octopus
+wget https://github.com/VibeAny/octopus-cli/releases/latest/download/octopus-v0.0.4-macos-arm64-YYYYMMDD.xxxxxxxx
+chmod +x octopus-v0.0.4-macos-arm64-*
+sudo mv octopus-v0.0.4-macos-arm64-* /usr/local/bin/octopus
 ```
 
 **Build from Source:**
@@ -367,6 +408,26 @@ See [test documentation](test/) for more details.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Documentation
+
+📚 **Complete project documentation is available in the [docs/](docs/) directory:**
+
+### Core Documentation
+- **[Architecture](docs/architecture.md)** - System architecture and component design
+- **[Requirements](docs/requirements.md)** - Project requirements and specifications  
+- **[Tasks](docs/tasks.md)** - Project task management and version history
+
+### Version-Specific Documentation
+- **[v0.1.0 Planning](docs/versions/v0.1.0/)** - Next major release planning
+  - [Design Document](docs/versions/v0.1.0/design.md) - Technical architecture and implementation
+  - [Task Management](docs/versions/v0.1.0/tasks.md) - Development phases and progress tracking
+
+### User Guides
+- **[Installation Guide](#installation)** - Multiple installation methods
+- **[Quick Start](#quick-start)** - Get up and running quickly
+- **[Configuration Examples](configs/)** - Sample TOML configurations
+- **[Testing Guide](test/)** - Testing methodology and reports
 
 ## Support
 

@@ -1,43 +1,77 @@
 # 架构设计文档
 
-> **版本说明**: 本文档适用于 Octopus CLI v0.0.3+  
-> **重要变更**: v0.0.3 移除了可配置的 PID 文件路径，统一使用系统管理的固定路径
+> **版本说明**: 本文档适用于 Octopus CLI v0.1.0+  
+> **重大变更**: v0.1.0 引入多代理支持和增强用户体验设计
+> **向后兼容**: 完全兼容 v0.0.x 系列配置和命令
 
 ## 整体架构图
 
 ```mermaid
 graph TB
-    A[Claude Code] -->|HTTP Requests| B[Octopus CLI<br/>Proxy Service<br/>Port 8080]
-    B -->|Forward Requests| C[Target API<br/>Configurable]
-    C -->|Response| B
-    B -->|Response| A
+    subgraph "Coding Agents"
+        A1[Claude Code]
+        A2[GitHub Codex]
+        A3[Gemini Code]
+        A4[CodeBuddy]
+        A5[Other Agents]
+    end
 
-    D[CLI Commands<br/>Configuration] -->|Configure| B
-    B -->|State Management| E[TOML Config<br/>octopus.toml]
+    A1 -->|HTTP Requests| B[Octopus CLI<br/>Universal Proxy Service<br/>Port 8080]
+    A2 -->|HTTP Requests| B
+    A3 -->|HTTP Requests| B
+    A4 -->|HTTP Requests| B
+    A5 -->|HTTP Requests| B
+
+    B -->|Smart Routing| C[Target API<br/>Auto-Detection]
+    C -->|Response| B
+    B -->|Response| A1
+    B -->|Response| A2
+    B -->|Response| A3
+
+    D[Enhanced CLI<br/>Beautiful Interface] -->|Configure| B
+    B -->|State Management| E[TOML Config<br/>Multi-Agent Support]
 
     subgraph "API Endpoints"
         F[Anthropic Official]
-        G[Proxy Services]
-        H[Custom APIs]
+        G[OpenAI GPT-4]
+        H[Google Gemini]
+        I[Custom APIs]
+        J[Proxy Services]
     end
 
     C -.->|Dynamic Switch| F
     C -.->|Dynamic Switch| G
     C -.->|Dynamic Switch| H
+    C -.->|Dynamic Switch| I
+    C -.->|Dynamic Switch| J
 
-    subgraph "Process Management"
-        I[PID File<br/>os.TempDir/octopus.pid]
-        J[Process Manager<br/>v0.0.3 Unified]
+    subgraph "Enhanced UI Components"
+        K[Progress Bars]
+        L[Spinners & Animations] 
+        M[Status Indicators]
+        N[Interactive Prompts]
     end
 
-    B -.-> J
-    J -.-> I
+    D -.-> K
+    D -.-> L
+    D -.-> M
+    D -.-> N
+
+    subgraph "Process Management"
+        O[PID File<br/>System Managed]
+        P[Process Manager<br/>Multi-Agent Aware]
+    end
+
+    B -.-> P
+    P -.-> O
 
     style B fill:#e1f5fe
     style D fill:#f3e5f5
     style E fill:#fff3e0
-    style I fill:#fff8e1
-    style J fill:#f1f8e9
+    style K fill:#e8f5e8
+    style L fill:#e8f5e8
+    style M fill:#e8f5e8
+    style N fill:#e8f5e8
 ```
 
 ## 核心组件设计
